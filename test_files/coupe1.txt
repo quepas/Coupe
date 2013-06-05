@@ -1,5 +1,3 @@
-def def
-()
-
-  )! # asdaggeag
-(
+def asd(x)
+	bla(x) -> bleh(x)
+end

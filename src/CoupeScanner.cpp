@@ -48,8 +48,18 @@ namespace Coupe
 			currentFile.unget();
 			--currentPosition.col;
 
+			// TODO: currentValue -> to lower case! (!?)
+
 			if(currentValue == "def") return createToken(TOK_KW_DEF, currentValue, tokenPosition);
 			if(currentValue == "extern") return createToken(TOK_KW_EXTERN, currentValue, tokenPosition);
+			if(currentValue == "begin") return createToken(TOK_KW_BEGIN, currentValue, tokenPosition);
+			if(currentValue == "end") return createToken(TOK_KW_END, currentValue, tokenPosition);
+			if(currentValue == "if") return createToken(TOK_KW_IF, currentValue, tokenPosition);
+			if(currentValue == "else") return createToken(TOK_KW_ELSE, currentValue, tokenPosition);
+			if(currentValue == "loop") return createToken(TOK_KW_LOOP, currentValue, tokenPosition);
+			if(currentValue == "return") return createToken(TOK_KW_RETURN, currentValue, tokenPosition);
+			if(currentValue == "and") return createToken(TOK_KW_AND, currentValue, tokenPosition);
+			if(currentValue == "or") return createToken(TOK_KW_OR, currentValue, tokenPosition);
 
 			return createToken(TOK_IDENTIFIER, currentValue, tokenPosition);
 		} 
@@ -69,41 +79,118 @@ namespace Coupe
 			{
 				return createToken(TOK_ROUND_RIGHT_BRACKET, currentValue, tokenPosition); 
 			}
+			else if(currentChar == '*')
+			{
+				return createToken(TOK_OP_MUL, currentValue, tokenPosition);
+			}
+			else if(currentChar == '/')
+			{
+				return createToken(TOK_OP_DIV, currentValue, tokenPosition);
+			}
+			else if(currentChar == '%')
+			{
+				return createToken(TOK_OP_MOD, currentValue, tokenPosition);
+			}
+			else if(currentChar == '-')
+			{
+				currentChar = currentFile.get();
+				++currentPosition.col;
+
+				if(currentChar == '>')
+				{
+					currentValue.push_back(currentChar);
+					return createToken(TOK_OP_IMPLICATION, currentValue, tokenPosition);
+				}
+				currentFile.unget();
+				--currentPosition.col;
+
+				return createToken(TOK_OP_SUB, currentValue, tokenPosition);
+			}
+			else if(currentChar == '+')
+			{
+				return createToken(TOK_OP_ADD, currentValue, tokenPosition);
+			}
+			else if(currentChar == '^')
+			{
+				return createToken(TOK_OP_POWER, currentValue, tokenPosition);
+			}
 			else if(currentChar == '#')
 			{
 				currentChar = currentFile.get();
-				++currentPosition.col;
+				currentValue.push_back(currentChar);
+				++currentPosition.col;												
 
 				if(currentChar == '!')
-				{
-					currentValue.push_back(currentChar);
-					return createToken(TOK_COMMENT_BEGIN, currentValue, tokenPosition);
-				}
-				else
-				{
-					currentFile.unget();
-					--currentPosition.col;
-					return createToken(TOK_COMMENT, currentValue, tokenPosition);
-				}
-			}
-			else if(currentChar == '!')
-			{
-				currentChar = currentFile.get();
-				++currentPosition.col;
+				{					
+					// TODO: look for '!#'
+					do
+					{
+						currentChar = currentFile.get();
+						currentValue.push_back(currentChar);
+						++currentPosition.col;
 
-				if(currentChar == '#') 
-				{
-					currentValue.push_back(currentChar);
-					return createToken(TOK_COMMENT_END, currentValue, tokenPosition);
+						if(currentChar == '\n')
+						{
+							++currentPosition.row;
+							currentPosition.col = 0;
+						}
+
+						if(currentChar == EOF)
+						{
+							currentFile.unget();
+							--currentPosition.col;
+							return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
+						}
+
+						if(currentChar == '!')
+						{
+							currentChar = currentFile.get();
+							currentValue.push_back(currentChar);
+							++currentPosition.col;
+
+							if(currentChar == '#')
+							{
+								return createToken(TOK_COMMENT_SECTION, currentValue, tokenPosition);
+							}
+
+							if(currentChar == '\n')
+							{
+								++currentPosition.row;
+								currentPosition.col = 0;
+							}
+
+							if(currentChar == EOF)
+							{
+								currentFile.unget();
+								--currentPosition.col;
+								return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
+							}
+						}
+					} while(true);					
+				}				
+				else
+				{					
+					// TODO: make a method - if EOF then break
+					if(currentChar == EOF)
+					{
+						currentFile.unget();
+						--currentPosition.col;					
+					}
+					else 
+					{
+						while(currentChar != '\n')
+						{
+							currentChar = currentFile.get();
+							if(currentChar != '\n')
+								currentValue.push_back(currentChar);
+						}					
+						++currentPosition.row;
+						currentPosition.col = 0;
+					}					
+
+					return createToken(TOK_COMMENT_LINE, currentValue, tokenPosition);
 				}
-				else 
-				{
-					currentFile.unget();
-					--currentPosition.col;
-					// TODO: make some general errors
-					return createToken(TOK_ERROR, currentValue + " Wrong char :(", tokenPosition);
-				}
-			}
+			}			
 			else if(currentChar == EOF)
 			{
 				return createToken(TOK_EOF, currentValue, tokenPosition);
