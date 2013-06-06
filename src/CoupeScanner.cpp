@@ -47,19 +47,19 @@ namespace Coupe
 			} while (Utils::isCharacter(currentChar));
 			currentFile.unget();
 			--currentPosition.col;
+			
+			std::string comparedValue = Utils::toLowerCase(currentValue);
 
-			// TODO: currentValue -> to lower case! (!?)
-
-			if(currentValue == "def") return createToken(TOK_KW_DEF, currentValue, tokenPosition);
-			if(currentValue == "extern") return createToken(TOK_KW_EXTERN, currentValue, tokenPosition);
-			if(currentValue == "begin") return createToken(TOK_KW_BEGIN, currentValue, tokenPosition);
-			if(currentValue == "end") return createToken(TOK_KW_END, currentValue, tokenPosition);
-			if(currentValue == "if") return createToken(TOK_KW_IF, currentValue, tokenPosition);
-			if(currentValue == "else") return createToken(TOK_KW_ELSE, currentValue, tokenPosition);
-			if(currentValue == "loop") return createToken(TOK_KW_LOOP, currentValue, tokenPosition);
-			if(currentValue == "return") return createToken(TOK_KW_RETURN, currentValue, tokenPosition);
-			if(currentValue == "and") return createToken(TOK_KW_AND, currentValue, tokenPosition);
-			if(currentValue == "or") return createToken(TOK_KW_OR, currentValue, tokenPosition);
+			if(comparedValue == "def")    return createToken(TOK_KW_DEF, currentValue, tokenPosition);
+			if(comparedValue == "extern") return createToken(TOK_KW_EXTERN, currentValue, tokenPosition);
+			if(comparedValue == "begin")  return createToken(TOK_KW_BEGIN, currentValue, tokenPosition);
+			if(comparedValue == "end")    return createToken(TOK_KW_END, currentValue, tokenPosition);
+			if(comparedValue == "if")	  return createToken(TOK_KW_IF, currentValue, tokenPosition);
+			if(comparedValue == "else")	  return createToken(TOK_KW_ELSE, currentValue, tokenPosition);
+			if(comparedValue == "loop")   return createToken(TOK_KW_LOOP, currentValue, tokenPosition);
+			if(comparedValue == "return") return createToken(TOK_KW_RETURN, currentValue, tokenPosition);
+			if(comparedValue == "and")    return createToken(TOK_KW_AND, currentValue, tokenPosition);
+			if(comparedValue == "or")     return createToken(TOK_KW_OR, currentValue, tokenPosition);
 
 			return createToken(TOK_IDENTIFIER, currentValue, tokenPosition);
 		} 
