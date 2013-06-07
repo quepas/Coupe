@@ -113,6 +113,8 @@ namespace Coupe
 			CASE_TYPE(TOK_OP_POWER)
 			CASE_TYPE(TOK_COMMENT_LINE)
 			CASE_TYPE(TOK_COMMENT_SECTION)
+			default:
+				return TOKEN_TYPE_TO_STRING(TOK_ERROR);
 		}
 	}
 }
