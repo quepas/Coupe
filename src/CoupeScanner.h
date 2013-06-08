@@ -10,22 +10,13 @@ namespace Coupe
 	class Scanner
 	{
 		public:			
+			Scanner() : currentPosition(1, 0), currentStream(nullptr) {}	
+
 			void setFile(std::string _filename);
 			void setStream(std::istream& stream);
-			Token* getNext();
-
-			static Scanner& getInstance() 
-			{
-				static Scanner instance;
-				return instance;
-			}
+			Token* getNext();			
 		private:
-			Scanner() {}						
-			Scanner(const Scanner&) {}
-			Scanner& operator=(const Scanner&) {}
-
-			Position currentPosition;
-			std::ifstream currentFile;
+			Position currentPosition;			
 			std::istream* currentStream;
 
 			Token* createToken(Type type, std::string value, Position position);

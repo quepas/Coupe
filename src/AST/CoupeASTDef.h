@@ -27,18 +27,18 @@ namespace Coupe
 	};
 	
 	/**
-	 *	BaseAST
+	 *	ExpressionAST
 	 */
-	class BaseAST
+	class ExpressionAST
 	{
 		public:
-			virtual ~BaseAST() {}
+			virtual ~ExpressionAST() {}
 	};
 
 	/**
-	 *	NumberAST -> BaseAST
+	 *	NumberAST -> ExpressionAST
 	 */
-	class NumberAST : public BaseAST
+	class NumberAST : public ExpressionAST
 	{
 		public:
 			NumberAST(int value);
@@ -49,7 +49,7 @@ namespace Coupe
 			NumberValue number;				
 	};
 
-	class VariableAST : public BaseAST
+	class VariableAST : public ExpressionAST
 	{
 		public:
 			VariableAST(std::string _name) : name(_name) {};
@@ -59,30 +59,30 @@ namespace Coupe
 	};
 
 	/**
-	 * BinaryOpAST -> BaseAST (for binary operators)
+	 * BinaryOpAST -> ExpressionAST (for binary operators)
 	 */
-	class BinaryOpAST : public BaseAST
+	class BinaryOpAST : public ExpressionAST
 	{
 		public:
-			BinaryOpAST(char _op, BaseAST* _LHS, BaseAST* _RHS)
+			BinaryOpAST(char _op, ExpressionAST* _LHS, ExpressionAST* _RHS)
 				: op(_op), LHS(_LHS), RHS(_RHS) {}
 
 		private:
 			char op; // TODO: maybe a token info here? :)
-			BaseAST *LHS, *RHS;
+			ExpressionAST *LHS, *RHS;
 	};
 
-	class CallAST : public BaseAST
+	class CallAST : public ExpressionAST
 	{
 		public:
-			CallAST(std::string _callee, const std::vector<BaseAST*>& _args)
+			CallAST(std::string _callee, const std::vector<ExpressionAST*>& _args)
 				: callee(_callee), args(_args) {}
 		private:
 			std::string callee;
-			std::vector<BaseAST*> args;
+			std::vector<ExpressionAST*> args;
 	};
 
-	class PrototypeAST : public BaseAST
+	class PrototypeAST
 	{
 		public:
 			PrototypeAST(std::string _name, const std::vector<std::string>& _args)
@@ -92,14 +92,14 @@ namespace Coupe
 			std::vector<std::string> args;
 	};
 
-	class FunctionAST : public BaseAST
+	class FunctionAST
 	{
 		public:
-			FunctionAST(PrototypeAST* _prototype, BaseAST* _body)
+			FunctionAST(PrototypeAST* _prototype, ExpressionAST* _body)
 				: prototype(_prototype), body(_body) {}
 		private:
 			PrototypeAST* prototype;
-			BaseAST* body;
+			ExpressionAST* body;
 	};
 }
 

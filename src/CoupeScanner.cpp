@@ -8,13 +8,14 @@ namespace Coupe
 	// TODO: rewrite - use base istream!
 	void Scanner::setFile(std::string _filename)
 	{		
-		currentFile.close();
-		currentFile.open(_filename);
-		if(!currentFile.is_open()) 
+		std::ifstream* currentFile = new std::ifstream();
+		currentFile -> close();
+		currentFile -> open(_filename);
+		if(!currentFile -> is_open()) 
 		{
 			std::cout << "Cannot open file: " << _filename << "!" << std::endl;
 		}
-		currentStream = &currentFile;
+		currentStream = currentFile;
 		currentPosition.set(1, 0);
 	}
 
@@ -50,28 +51,40 @@ namespace Coupe
 				currentValue.push_back(currentChar);
 				currentChar = currentStream -> get();
 				++currentPosition.col;
-			} while (Utils::isCharacter(currentChar));
+			} while (Utils::isCharacter(currentChar) || Utils::isDigit(currentChar) || currentChar == '_');
 			currentStream -> unget();
 			--currentPosition.col;
 			
 			std::string comparedValue = Utils::toLowerCase(currentValue);
 
-			if(comparedValue == "def")    return createToken(TOK_KW_DEF, currentValue, tokenPosition);
-			if(comparedValue == "extern") return createToken(TOK_KW_EXTERN, currentValue, tokenPosition);
-			if(comparedValue == "begin")  return createToken(TOK_KW_BEGIN, currentValue, tokenPosition);
-			if(comparedValue == "end")    return createToken(TOK_KW_END, currentValue, tokenPosition);
-			if(comparedValue == "if")	  return createToken(TOK_KW_IF, currentValue, tokenPosition);
-			if(comparedValue == "else")	  return createToken(TOK_KW_ELSE, currentValue, tokenPosition);
-			if(comparedValue == "loop")   return createToken(TOK_KW_LOOP, currentValue, tokenPosition);
-			if(comparedValue == "return") return createToken(TOK_KW_RETURN, currentValue, tokenPosition);
-			if(comparedValue == "and")    return createToken(TOK_KW_AND, currentValue, tokenPosition);
-			if(comparedValue == "or")     return createToken(TOK_KW_OR, currentValue, tokenPosition);
+			if(comparedValue == "def")		return createToken(TOK_KW_DEF, currentValue, tokenPosition);
+			if(comparedValue == "extern")	return createToken(TOK_KW_EXTERN, currentValue, tokenPosition);
+			if(comparedValue == "begin")	return createToken(TOK_KW_BEGIN, currentValue, tokenPosition);
+			if(comparedValue == "end")		return createToken(TOK_KW_END, currentValue, tokenPosition);
+			if(comparedValue == "if")		return createToken(TOK_KW_IF, currentValue, tokenPosition);
+			if(comparedValue == "else")		return createToken(TOK_KW_ELSE, currentValue, tokenPosition);
+			if(comparedValue == "loop")		return createToken(TOK_KW_LOOP, currentValue, tokenPosition);
+			if(comparedValue == "return")	return createToken(TOK_KW_RETURN, currentValue, tokenPosition);
+			if(comparedValue == "and")		return createToken(TOK_KW_AND, currentValue, tokenPosition);
+			if(comparedValue == "or")		return createToken(TOK_KW_OR, currentValue, tokenPosition);
+			if(comparedValue == "import")	return createToken(TOK_KW_IMPORT, currentValue, tokenPosition);
 
 			return createToken(TOK_IDENTIFIER, currentValue, tokenPosition);
 		} 
 		// number
 		else if (Utils::isDigit(currentChar))
 		{
+			// TODO: add non-fixed numbers processing
+			do 
+			{
+				currentValue.push_back(currentChar);
+				currentChar = currentStream -> get();
+				++currentPosition.col;
+			} while (Utils::isDigit(currentChar));
+			currentStream -> unget();
+			--currentPosition.col;
+
+			return createToken(TOK_INTEGER, currentValue, tokenPosition);
 		}
 		// special characters
 		else
