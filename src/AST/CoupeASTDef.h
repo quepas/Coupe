@@ -101,6 +101,14 @@ namespace Coupe
 			PrototypeAST* prototype;
 			ExpressionAST* body;
 	};
+
+	class ImportAST
+	{
+		public: 
+			ImportAST(std::string _name) : name(_name) {}
+		private:
+			std::string name;
+	};
 }
 
 #endif

@@ -1,0 +1,4 @@
+coupe := import | extern | definition | maincode 
+
+import := TOK_KW_IMPORT TOK_IDENTIFIER	
+extern := TOK_KW_EXTERN prototype	 

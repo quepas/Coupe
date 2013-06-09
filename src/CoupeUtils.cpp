@@ -77,7 +77,7 @@ namespace Coupe
 		std::string result = "";
 
 		result.append(getTokenName(token -> type) + " ");
-		result.append("(\'" + token -> value.value + "\'");
+		result.append("(\'" + token -> value.data + "\'");
 		result.append(" [" + lexical_cast<std::string>(token -> position.row) + 
 					  ", " + lexical_cast<std::string>(token -> position.col) + "])");
 
@@ -103,7 +103,7 @@ namespace Coupe
 			CASE_TYPE(TOK_KW_OR)
 			CASE_TYPE(TOK_KW_IMPORT)
 			CASE_TYPE(TOK_INTEGER)
-			CASE_TYPE(TOK_FLOAT)
+			CASE_TYPE(TOK_DOUBLE)
 			CASE_TYPE(TOK_ROUND_LEFT_BRACKET)
 			CASE_TYPE(TOK_ROUND_RIGHT_BRACKET)
 			CASE_TYPE(TOK_OP_IMPLICATION)

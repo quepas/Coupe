@@ -3,6 +3,7 @@
 
 #include "CoupeToken.h"
 
+#include <iostream>
 #include <fstream>
 
 namespace Coupe
@@ -10,16 +11,25 @@ namespace Coupe
 	class Scanner
 	{
 		public:			
-			Scanner() : currentPosition(1, 0), currentStream(nullptr) {}	
+			Scanner() : inputStream(&std::cin),
+						outputStream(&std::cout),
+						currentPosition(1, 0), 
+						verbose(false) {}	
 
-			void setFile(std::string _filename);
-			void setStream(std::istream& stream);
+			void setInputFile(std::string _filename);
+			void setInputStream(std::istream& _stream);
+			void setOutputStream(std::istream& _stream);
+			void setVerbose(bool _verbose);
 			Token* getNext();			
 		private:
 			Position currentPosition;			
-			std::istream* currentStream;
+			std::istream* inputStream;
+			std::ostream* outputStream;
+			bool verbose;
 
+			Token* getNextToken();
 			Token* createToken(Type type, std::string value, Position position);
+			void beVerboseAboutToken(Token* token);
 	};
 }
 

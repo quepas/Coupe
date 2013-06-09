@@ -1,3 +1,5 @@
+import 2
+extern getchar()
 def ret2(x)
 	return 2
 end

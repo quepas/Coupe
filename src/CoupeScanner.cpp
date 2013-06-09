@@ -2,29 +2,41 @@
 
 #include "CoupeUtils.h"
 #include <iostream>
+#include <string>
 
 namespace Coupe
 {
 	// TODO: rewrite - use base istream!
-	void Scanner::setFile(std::string _filename)
+	void Scanner::setInputFile(std::string _filename)
 	{		
 		std::ifstream* currentFile = new std::ifstream();
-		currentFile -> close();
 		currentFile -> open(_filename);
 		if(!currentFile -> is_open()) 
 		{
 			std::cout << "Cannot open file: " << _filename << "!" << std::endl;
 		}
-		currentStream = currentFile;
+		setInputStream(*currentFile);
 		currentPosition.set(1, 0);
 	}
 
-	void Scanner::setStream(std::istream& stream)
+	void Scanner::setInputStream(std::istream& stream)
 	{
-		currentStream = &stream;
+		inputStream = &stream;
+	}
+
+	void Scanner::setVerbose(bool _verbose)
+	{
+		verbose = _verbose;
 	}
 
 	Token* Scanner::getNext()
+	{
+		Token* token = getNextToken();
+		beVerboseAboutToken(token);
+		return token;
+	}
+
+	Token* Scanner::getNextToken()
 	{					
 		char currentChar;
 		std::string currentValue = "";
@@ -32,7 +44,7 @@ namespace Coupe
 		// get next chars and remove all whitespaces
 		do 
 		{
-			currentChar = currentStream -> get();
+			currentChar = inputStream -> get();
 			++currentPosition.col;
 
 			if(currentChar == '\n')
@@ -49,10 +61,10 @@ namespace Coupe
 			do 
 			{
 				currentValue.push_back(currentChar);
-				currentChar = currentStream -> get();
+				currentChar = inputStream -> get();
 				++currentPosition.col;
 			} while (Utils::isCharacter(currentChar) || Utils::isDigit(currentChar) || currentChar == '_');
-			currentStream -> unget();
+			inputStream -> unget();
 			--currentPosition.col;
 			
 			std::string comparedValue = Utils::toLowerCase(currentValue);
@@ -78,10 +90,10 @@ namespace Coupe
 			do 
 			{
 				currentValue.push_back(currentChar);
-				currentChar = currentStream -> get();
+				currentChar = inputStream -> get();
 				++currentPosition.col;
 			} while (Utils::isDigit(currentChar));
-			currentStream -> unget();
+			inputStream -> unget();
 			--currentPosition.col;
 
 			return createToken(TOK_INTEGER, currentValue, tokenPosition);
@@ -112,7 +124,7 @@ namespace Coupe
 			}
 			else if(currentChar == '-')
 			{
-				currentChar = currentStream -> get();
+				currentChar = inputStream -> get();
 				++currentPosition.col;
 
 				if(currentChar == '>')
@@ -120,7 +132,7 @@ namespace Coupe
 					currentValue.push_back(currentChar);
 					return createToken(TOK_OP_IMPLICATION, currentValue, tokenPosition);
 				}
-				currentStream -> unget();
+				inputStream -> unget();
 				--currentPosition.col;
 
 				return createToken(TOK_OP_SUB, currentValue, tokenPosition);
@@ -135,7 +147,7 @@ namespace Coupe
 			}
 			else if(currentChar == '#')
 			{
-				currentChar = currentStream -> get();
+				currentChar = inputStream -> get();
 				currentValue.push_back(currentChar);
 				++currentPosition.col;												
 
@@ -144,7 +156,7 @@ namespace Coupe
 					// TODO: look for '!#'
 					do
 					{
-						currentChar = currentStream -> get();
+						currentChar = inputStream -> get();
 						currentValue.push_back(currentChar);
 						++currentPosition.col;
 
@@ -156,14 +168,14 @@ namespace Coupe
 
 						if(currentChar == EOF)
 						{
-							currentStream -> unget();
+							inputStream -> unget();
 							--currentPosition.col;
 							return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
 						}
 
 						if(currentChar == '!')
 						{
-							currentChar = currentStream -> get();
+							currentChar = inputStream -> get();
 							currentValue.push_back(currentChar);
 							++currentPosition.col;
 
@@ -180,7 +192,7 @@ namespace Coupe
 
 							if(currentChar == EOF)
 							{
-								currentStream -> unget();
+								inputStream -> unget();
 								--currentPosition.col;
 								return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
 							}
@@ -192,14 +204,14 @@ namespace Coupe
 					// TODO: make a method - if EOF then break
 					if(currentChar == EOF)
 					{
-						currentStream -> unget();
+						inputStream -> unget();
 						--currentPosition.col;					
 					}
 					else 
 					{
 						while(currentChar != '\n')
 						{
-							currentChar = currentStream -> get();
+							currentChar = inputStream -> get();
 							if(currentChar != '\n')
 								currentValue.push_back(currentChar);
 						}					
@@ -225,10 +237,18 @@ namespace Coupe
 		tempToken -> position = position;
 		Value tempValue;
 		tempValue.type = Value::STRING; // TODO: fix this, should depends on Token Type
-		tempValue.value = value;
+		tempValue.data = value;
 		tempToken -> value = tempValue;
 		tempToken -> type = type;
 
 		return tempToken;
+	}
+
+	void Scanner::beVerboseAboutToken(Token* token)
+	{
+		if(verbose)
+		{
+			*outputStream << Utils::createTokenInfo(token) << std::endl;				
+		}		
 	}
 }

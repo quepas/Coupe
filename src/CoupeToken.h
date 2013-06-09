@@ -12,7 +12,7 @@ namespace Coupe
 		Position() : row(0), col(0) {}
 		Position(int _row, int _col) : row(_row), col(_col) {}
 
-		int row, col;
+		unsigned int row, col;
 
 		void set(int _row, int _col)
 		{
@@ -32,7 +32,7 @@ namespace Coupe
 		};
 		
 		Type type;
-		std::string value;					
+		std::string data;					
 	};
 
 	enum Type
