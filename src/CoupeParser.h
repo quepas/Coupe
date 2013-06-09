@@ -28,6 +28,8 @@ namespace Coupe
 			Token* token;
 			bool verbose;
 
+			void getNextToken();
+
 			// handling main products
 			void handleImport();
 			void handleExternal();
@@ -39,9 +41,11 @@ namespace Coupe
 			ExpressionAST* parseIdentifier();
 			ExpressionAST* parseParenthesis();
 			ExpressionAST* parsePrimary();
+			ExpressionAST* parseExpression();
 			ExpressionAST* parseBinOpRHS(int expressionPrec, ExpressionAST* LHS);
 			PrototypeAST* parsePrototype();
-			FunctionAST* parseFunction();
+			PrototypeAST* parseExtern();
+			FunctionAST* parseDefinition();
 			FunctionAST* parseTopLevelExpression();
 			ImportAST* parseImport();
 
@@ -56,7 +60,7 @@ namespace Coupe
 			void beVerboseAboutHandling(std::string name);
 			void beVerboseAboutExpression(ExpressionAST* expression);
 			void beVerboseAboutPrototype(PrototypeAST* prototype);
-			void beVerboseAboutFunction(FunctionAST* function);
+			void beVerboseAboutDefinition(FunctionAST* function);
 			void beVerboseAboutImport(ImportAST* import);
 	};
 }
