@@ -145,6 +145,18 @@ namespace Coupe
 			{
 				return createToken(TOK_OP_POWER, currentValue, tokenPosition);
 			}
+			else if(currentChar == ',')
+			{
+				return createToken(TOK_COMMA, currentValue, tokenPosition);
+			}
+			else if(currentChar == '<')
+			{
+				return createToken(TOK_OP_LESS, currentValue, tokenPosition);
+			}
+			else if(currentChar == '>')
+			{
+				return createToken(TOK_OP_MORE, currentValue, tokenPosition);
+			}
 			else if(currentChar == '#')
 			{
 				currentChar = inputStream -> get();
@@ -225,6 +237,10 @@ namespace Coupe
 			else if(currentChar == EOF)
 			{
 				return createToken(TOK_EOF, currentValue, tokenPosition);
+			}
+			else
+			{
+				return createToken(TOK_ERROR, currentValue, tokenPosition);
 			}
 		}
 

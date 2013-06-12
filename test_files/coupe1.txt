@@ -1,5 +1,4 @@
 import patterns
 extern getchar (asd asd)
 def ret2(x)
-	return 2
-end
+import patterns

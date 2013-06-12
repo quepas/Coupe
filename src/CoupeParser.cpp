@@ -32,10 +32,9 @@ namespace Coupe
 	{
 		if(scanner != nullptr)
 		{
+			getNextToken();
 			do 
-			{
-				token = scanner -> getNext();
-
+			{				
 				// main products (coupe := ...)
 				switch(token -> type)
 				{
@@ -50,9 +49,12 @@ namespace Coupe
 						break;
 					default:
 						handleMainCode();
+						//if(token -> type == TOK_EOF)
+						goto label;
 						break;
 				}
 			} while (token -> type != TOK_EOF);
+			label:;
 		}
 	}
 
@@ -74,10 +76,10 @@ namespace Coupe
 	ImportAST* Parser::parseImport()
 	{		
 		getNextToken();
-
 		if(token -> type == TOK_IDENTIFIER)
 		{
 			// TODO: mind about correct value.type 
+			getNextToken();
 			return new ImportAST(token -> value.data);
 		}
 		else
@@ -98,6 +100,7 @@ namespace Coupe
 
 	PrototypeAST* Parser::parseExtern()
 	{
+		getNextToken();	// eat before
 		return parsePrototype();
 	}
 
@@ -105,8 +108,7 @@ namespace Coupe
 	{
 		std::string functionName;
 		std::vector<std::string> args;
-
-		getNextToken();
+		
 		if(token -> type != TOK_IDENTIFIER)
 		{
 			return errorP("expected function name in prototype", token -> position);
@@ -130,6 +132,7 @@ namespace Coupe
 		{
 			return errorP("expected ')' in prototype", token -> position);
 		}
+		getNextToken(); // eat some ')'
 		return new PrototypeAST(functionName, args);
 	}
 	
@@ -145,6 +148,7 @@ namespace Coupe
 
 	FunctionAST* Parser::parseDefinition()
 	{
+		getNextToken();	// eat before
 		PrototypeAST* prototype = parsePrototype();
 		if(prototype != nullptr)
 		{
@@ -153,21 +157,153 @@ namespace Coupe
 			{
 				return new FunctionAST(prototype, body);
 			}
+			else 
+			{
+				errorF("Warning: no function body near place", token -> position);
+			}
 		}	
 		return nullptr;
 	}
 
 	ExpressionAST* Parser::parseExpression()
 	{
+		ExpressionAST* LHS = parsePrimary();
+		if(LHS == nullptr) 
+		{
+			return nullptr;
+		}
+		return parseBinOpRHS(0, LHS);
+	}
+
+	ExpressionAST* Parser::parsePrimary()
+	{
+		switch(token -> type)
+		{
+			case TOK_IDENTIFIER:
+				return parseIdentifier();
+			case TOK_INTEGER:
+				return parseNumber();
+			case TOK_DOUBLE:
+				return parseNumber();
+			case TOK_ROUND_LEFT_BRACKET:
+				return parseParenthesis();
+			default:
+				return error("Unknown token when expecting expression", token -> position);
+		}
+	}
+
+	ExpressionAST* Parser::parseIdentifier()
+	{
+		// TODO: check if String
+		std::string identifier = token -> value.data;
+		getNextToken();	// eat identifier
+
+		if(token -> type != TOK_ROUND_LEFT_BRACKET)
+		{
+			new VariableAST(identifier);
+		} 
+		else
+		{
+			getNextToken(); // eat '('
+			std::vector<ExpressionAST*> args;
+
+			if(token -> type != TOK_ROUND_RIGHT_BRACKET)
+			{
+				while(true)
+				{
+					ExpressionAST* arg = parseExpression();
+					if(arg == nullptr)
+						return nullptr;
+					args.push_back(arg);
+
+					if(token -> type == TOK_ROUND_RIGHT_BRACKET)					
+						break;					
+					if(token -> type != ',')					
+						return error("expected ')' or ',' in argument list", token -> position);					
+					getNextToken();
+				}
+			}
+			getNextToken(); // Eat ')'
+			return new CallAST(identifier, args);
+		}		
+	}
+
+	ExpressionAST* Parser::parseNumber()
+	{
+		ExpressionAST* result = nullptr;
+		switch(token -> type)
+		{
+			case TOK_INTEGER:
+				return new NumberAST(lexical_cast<int>(token -> value.data));
+			case TOK_DOUBLE:
+				return new NumberAST(lexical_cast<double>(token -> value.data));
+		}
+		getNextToken(); // eat number
+		return result;
+	}
+
+	ExpressionAST* Parser::parseParenthesis()
+	{
+		getNextToken(); // eat '('
+		ExpressionAST* expression = parseExpression();
+		if(!expression)
+			return nullptr;
+
+		if(token -> type != TOK_ROUND_RIGHT_BRACKET)
+			return error("expected ')'");
+		getNextToken(); // eat ')'
+
+		return expression;
+	}
+
+	ExpressionAST* Parser::parseBinOpRHS(int expressionPrec, ExpressionAST* LHS)
+	{
+		while(true)
+		{
+			int tokenPrec = 10; // TODO: fixme
+
+			if(tokenPrec < expressionPrec)
+				return LHS;
+
+			//Token* binaryOp = token;
+			char binaryOp = '+';
+			getNextToken();
+
+			if(token -> type != TOK_ROUND_RIGHT_BRACKET)
+			{
+				ExpressionAST* RHS = parsePrimary();
+				if(!RHS)
+					return nullptr;
+
+				int nextTokenPrec = 10; // TODO: fixme
+				if(tokenPrec < nextTokenPrec)
+				{
+					RHS = parseBinOpRHS(tokenPrec+1, RHS);
+					if(RHS == nullptr)
+						return nullptr;
+				}
+				LHS = new BinaryOpAST(binaryOp, LHS, RHS);
+			}
+			else
+			{
+				break;
+			}	
+		}
 		return nullptr;
 	}
 
 	void Parser::handleMainCode()
 	{
-		beVerboseAboutHandling("MainCode");
+		beVerboseAboutHandling("MainCode");		
 	}
 
 	// error functions
+	ExpressionAST* Parser::error(std::string msg, Position position /* = Position(0, 0) */)
+	{
+		*outputStream << prepareErrorMsg(msg, position) << std::endl;
+		return nullptr;
+	}
+
 	ImportAST* Parser::errorI(std::string msg, Position position /* = Position(0, 0) */)
 	{
 		*outputStream << prepareErrorMsg(msg, position) << std::endl;
@@ -175,6 +311,12 @@ namespace Coupe
 	}
 
 	PrototypeAST* Parser::errorP(std::string msg, Position position /* = Position(0, 0) */)
+	{
+		*outputStream << prepareErrorMsg(msg, position) << std::endl;
+		return nullptr;
+	}
+
+	FunctionAST* Parser::errorF(std::string msg, Position position /* = Position(0, 0) */)
 	{
 		*outputStream << prepareErrorMsg(msg, position) << std::endl;
 		return nullptr;

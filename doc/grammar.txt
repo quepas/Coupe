@@ -11,15 +11,20 @@ prototype := TOK_IDENTIFIER
 				TOK_ROUND_LEFT_BRACKET['('] 
 					TOK_IDENTIFIER* 
 				TOK_ROUND_RIGHT_BRACKET[')']
-expression := primary binoprhs
+expression := primary binoprhs*
 
 primary := identifierExpr | numberExpr | parenthesisExpr
+identifierExpr := TOK_IDENTIFIER |
+				  TOK_IDENTIFIER 
+					  TOK_ROUND_LEFT_BRACKET['(']
+						  expression*
+					  TOK_ROUND_RIGHT_BRACKET[')']
 binoprhs :=				
 
 identifierExpr := TOK_IDENTIFIER | 
 				  TOK_IDENTIFIER 
 					  TOK_ROUND_LEFT_BRACKET['(']
-						  expression*
+						  expression* (TOK_COMMA[','] expression)*
 					  TOK_ROUND_RIGHT_BRACKET[')']
 numberExpr := TOK_INTEGER | TOK_DOUBLE
 parenthesisExpr := TOK_ROUND_LEFT_BRACKET['(']
