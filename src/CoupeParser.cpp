@@ -48,19 +48,16 @@ namespace Coupe
 						handleDefinition();
 						break;
 					default:
-						handleMainCode();
-						//if(token -> type == TOK_EOF)
-						goto label;
+						handleMainCode();			
 						break;
 				}
-			} while (token -> type != TOK_EOF);
-			label:;
+			} while (token -> type != TOK_EOF);			
 		}
 	}
 
-	void Parser::getNextToken()
+	Token* Parser::getNextToken()
 	{
-		token = scanner -> getNext();
+		return token = scanner -> getNext();
 	}
 
 	void Parser::handleImport()
@@ -155,6 +152,7 @@ namespace Coupe
 			ExpressionAST* body = parseExpression();
 			if(body != nullptr)
 			{
+				getNextToken();
 				return new FunctionAST(prototype, body);
 			}
 			else 
@@ -172,7 +170,14 @@ namespace Coupe
 		{
 			return nullptr;
 		}
-		return parseBinOpRHS(0, LHS);
+
+		getNextToken();	
+		// TODO: refractor, end of expression should be find better
+		if(isBinaryOperator(token -> type))
+		{
+			return parseBinOpRHS(0, LHS);
+		}
+		return LHS;
 	}
 
 	ExpressionAST* Parser::parsePrimary()
@@ -290,6 +295,27 @@ namespace Coupe
 			}	
 		}
 		return nullptr;
+	}
+
+	bool Parser::isBinaryOperator(Type type)
+	{
+		switch(type)
+		{
+			case TOK_KW_AND:
+			case TOK_KW_OR:
+			case TOK_OP_IMPLICATION:
+			case TOK_OP_MUL:
+			case TOK_OP_DIV:
+			case TOK_OP_MOD:
+			case TOK_OP_SUB:
+			case TOK_OP_ADD:
+			case TOK_OP_POWER:
+			case TOK_OP_LESS:
+			case TOK_OP_MORE:
+				return true;
+			default:
+				return false;
+		}		
 	}
 
 	void Parser::handleMainCode()

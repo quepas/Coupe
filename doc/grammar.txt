@@ -1,32 +1,35 @@
 coupe := import | extern | definition | maincode 
 
-import := TOK_KW_IMPORT['import'] TOK_IDENTIFIER	
-extern := TOK_KW_EXTERN['extern'] prototype	 
+import := TOK_KW_IMPORT['import'] TOK_IDENTIFIER 
+extern := TOK_KW_EXTERN['extern'] prototype 
 definition := TOK_KW_DEF prototype 
 				  expression 
-			  TOK_KW_END
-maincode := expression
+			  TOK_KW_END 
+maincode := expression 
 
 prototype := TOK_IDENTIFIER 
 				TOK_ROUND_LEFT_BRACKET['('] 
 					TOK_IDENTIFIER* 
-				TOK_ROUND_RIGHT_BRACKET[')']
-expression := primary binoprhs*
+				TOK_ROUND_RIGHT_BRACKET[')'] 
+expression := (primary binoprhs*)*
 
 primary := identifierExpr | numberExpr | parenthesisExpr
-identifierExpr := TOK_IDENTIFIER |
-				  TOK_IDENTIFIER 
-					  TOK_ROUND_LEFT_BRACKET['(']
-						  expression*
-					  TOK_ROUND_RIGHT_BRACKET[')']
-binoprhs :=				
-
 identifierExpr := TOK_IDENTIFIER | 
 				  TOK_IDENTIFIER 
 					  TOK_ROUND_LEFT_BRACKET['(']
 						  expression* (TOK_COMMA[','] expression)*
 					  TOK_ROUND_RIGHT_BRACKET[')']
+
 numberExpr := TOK_INTEGER | TOK_DOUBLE
 parenthesisExpr := TOK_ROUND_LEFT_BRACKET['(']
 					   expression*
 				   TOK_ROUND_RIGHT_BRACKET[')'] 					  
+					  
+binoprhs := (TOK_OP_IMPLICATION |
+			 TOK_OP_MUL |
+			 TOK_OP_DIV |
+			 TOK_OP_MOD |
+ 			 TOK_OP_SUB |
+			 TOK_OP_ADD |
+			 TOK_OP_POWER) primary		
+

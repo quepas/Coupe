@@ -28,7 +28,7 @@ namespace Coupe
 			Token* token;
 			bool verbose;
 
-			void getNextToken();
+			Token* getNextToken();
 
 			// handling main products
 			void handleImport();
@@ -48,6 +48,9 @@ namespace Coupe
 			FunctionAST* parseDefinition();
 			FunctionAST* parseTopLevelExpression();
 			ImportAST* parseImport();
+
+			// helper functions
+			bool isBinaryOperator(Type type);
 
 			// error functions
 			ExpressionAST* error(std::string msg, Position position = Position(0, 0));
