@@ -1,6 +1,8 @@
 #ifndef COUPE_PARSER_H_
 #define COUPE_PARSER_H_
 
+#include <map>
+
 #include "CoupeScanner.h"
 #include "CoupeCodeGen.h"
 
@@ -30,7 +32,8 @@ namespace Coupe
 			Token* token;
 			bool verbose;
 			std::istream* inputStream;
-			std::ostream* outputStream;			
+			std::ostream* outputStream;		
+			static std::map<Type, int> binaryOperatorsPrecedence;
 
 			Token* getNextToken();
 
@@ -54,7 +57,9 @@ namespace Coupe
 			ImportAST* parseImport();
 
 			// helper functions
-			bool isBinaryOperator(Type type);
+			bool isBinaryOp(Type type);
+			static void initBinaryOpPrec();
+			int getBinaryOpPrec(Type type);
 
 			// error functions
 			ExpressionAST* error(std::string msg, Position position = Position(0, 0));

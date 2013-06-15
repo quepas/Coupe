@@ -154,6 +154,7 @@ namespace Coupe
 							{
 								case '\n':
 									toNextRow();
+									break;
 								case EOF:
 									ungetCharacter();
 									return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
@@ -167,6 +168,7 @@ namespace Coupe
 											return createToken(TOK_COMMENT_SECTION, currentValue, tokenPosition);
 										case '\n':
 											toNextRow();
+											break;
 										case EOF:
 											ungetCharacter();
 											return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
@@ -216,9 +218,7 @@ namespace Coupe
 	void Scanner::beVerboseAboutToken(Token* token)
 	{
 		if(verbose)
-		{
-			*outputStream << "* " << Utils::createTokenInfo(token) << std::endl;				
-		}		
+			*outputStream << "* " << Utils::createTokenInfo(token) << std::endl;					
 	}
 
 	char Scanner::getCharacter()

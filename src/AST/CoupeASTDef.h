@@ -2,6 +2,7 @@
 #define DEFINITIONS_AST_H_
 
 #include <llvm\Value.h>
+#include "../CoupeToken.h"
 
 #include <string>
 #include <vector>
@@ -60,12 +61,12 @@ namespace Coupe
 	class BinaryOpAST : public ExpressionAST
 	{
 		public:
-			BinaryOpAST(char _op, ExpressionAST* _LHS, ExpressionAST* _RHS)
+			BinaryOpAST(Type _op, ExpressionAST* _LHS, ExpressionAST* _RHS)
 				: op(_op), LHS(_LHS), RHS(_RHS) {}
 			virtual llvm::Value* Codegen();
 
 		private:
-			char op;
+			Type op;
 			ExpressionAST *LHS, *RHS;
 	};
 

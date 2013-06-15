@@ -1,5 +1,5 @@
 import patterns
-extern pow(base power)
+extern powE(base power)
 def pow(base power)
-	base
+	powE(base, power)+powA
 end

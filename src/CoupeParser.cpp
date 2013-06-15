@@ -5,6 +5,29 @@
 
 namespace Coupe
 {
+	std::map<Type, int> Parser::binaryOperatorsPrecedence;
+
+	void Parser::initBinaryOpPrec() {		
+		binaryOperatorsPrecedence[TOK_OP_LESS] = 10;
+		binaryOperatorsPrecedence[TOK_OP_MORE] = 10;
+		binaryOperatorsPrecedence[TOK_OP_IMPLICATION] = 20;
+		binaryOperatorsPrecedence[TOK_OP_POWER] = 40;
+		binaryOperatorsPrecedence[TOK_OP_ADD] = 80;
+		binaryOperatorsPrecedence[TOK_OP_SUB] = 80;
+		binaryOperatorsPrecedence[TOK_OP_MUL] = 160;
+		binaryOperatorsPrecedence[TOK_OP_DIV] = 160;
+		binaryOperatorsPrecedence[TOK_OP_MOD] = 160;
+	}
+
+	int Parser::getBinaryOpPrec(Type type)
+	{
+		if(isBinaryOp(type))
+		{
+			return binaryOperatorsPrecedence[type];
+		}
+		return -1;
+	}
+
 	void Parser::setInputFile(std::string filename)
 	{
 		std::ifstream* currentFile = new std::ifstream(filename);
@@ -36,12 +59,11 @@ namespace Coupe
 
 	void Parser::parse()
 	{
-		if(scanner != nullptr)
+		if(!scanner)
 		{					
+			getNextToken();
 			do 
-			{								
-				// main products (coupe := ...)
-				getNextToken();
+			{												
 				switch(token -> type)
 				{
 					case TOK_KW_IMPORT:
@@ -54,7 +76,7 @@ namespace Coupe
 						handleDefinition();
 						break;
 					default:
-						//handleMainCode();			
+						handleMainCode();									
 						break;
 				}
 			} while (token -> type != TOK_EOF);			
@@ -64,10 +86,8 @@ namespace Coupe
 	void Parser::handleImport()
 	{		
 		ImportAST* result = parseImport();
-		if(result != nullptr)
-		{
-			beVerboseAboutImport(result);
-		}		
+		if(!result)
+			beVerboseAboutImport(result);	
 	}
 
 	ImportAST* Parser::parseImport()
@@ -76,7 +96,7 @@ namespace Coupe
 		if(token -> type == TOK_IDENTIFIER)
 		{
 			std::string importName = token -> value.data;	
-			//getNextToken(); // eat identifier
+			getNextToken(); // eat identifier
 			return new ImportAST(importName);
 		}
 		else
@@ -88,10 +108,8 @@ namespace Coupe
 	void Parser::handleExtern()
 	{		
 		PrototypeAST* result = parseExtern();
-		if(result != nullptr)
-		{
+		if(!result)
 			beVerboseAboutPrototype(result, true);
-		}
 	}
 
 	PrototypeAST* Parser::parseExtern()
@@ -128,28 +146,25 @@ namespace Coupe
 		{
 			return errorP("expected ')' in prototype", token -> position);
 		}
-		//getNextToken(); // eat some ')'
+		getNextToken(); // eat ')'
 		return new PrototypeAST(functionName, args);
 	}
 	
 	void Parser::handleDefinition()
 	{		
 		FunctionAST* result = parseDefinition();
-		if(result != nullptr)
-		{
+		if(!result) 
 			beVerboseAboutFunction(result);
-		}
 	}
 
 	FunctionAST* Parser::parseDefinition()
 	{
 		getNextToken();	// eat before
 		PrototypeAST* prototype = parsePrototype();
-		if(prototype != nullptr)
-		{
-			getNextToken();
+		if(!prototype)
+		{			
 			ExpressionAST* body = parseExpression();
-			if(body != nullptr)
+			if(!body)
 			{
 				getNextToken();
 				return new FunctionAST(prototype, body);
@@ -165,17 +180,8 @@ namespace Coupe
 	ExpressionAST* Parser::parseExpression()
 	{
 		ExpressionAST* LHS = parsePrimary();
-		if(LHS == nullptr) 
-		{
-			return nullptr;
-		}
-
-		//getNextToken();	
-		if(isBinaryOperator(token -> type))
-		{
-			return parseBinOpRHS(0, LHS);
-		}
-		return LHS;
+		if(!LHS) return nullptr;			
+		return parseBinOpRHS(0, LHS);
 	}
 
 	ExpressionAST* Parser::parsePrimary()
@@ -196,8 +202,7 @@ namespace Coupe
 	}
 
 	ExpressionAST* Parser::parseIdentifier()
-	{
-		// TODO: check if String
+	{		
 		std::string identifier = token -> value.data;
 		getNextToken();	// eat identifier
 
@@ -215,13 +220,12 @@ namespace Coupe
 				while(true)
 				{
 					ExpressionAST* arg = parseExpression();
-					if(arg == nullptr)
-						return nullptr;
+					if(!arg) return nullptr;
 					args.push_back(arg);
 
 					if(token -> type == TOK_ROUND_RIGHT_BRACKET)					
 						break;					
-					if(token -> type != ',')					
+					if(token -> type != TOK_COMMA)					
 						return error("expected ')' or ',' in argument list", token -> position);					
 					getNextToken();
 				}
@@ -248,62 +252,46 @@ namespace Coupe
 	ExpressionAST* Parser::parseParenthesis()
 	{
 		getNextToken(); // eat '('
-		ExpressionAST* expression = parseExpression();
-		if(!expression)
-			return nullptr;
+		ExpressionAST* result = parseExpression();
+		if(!result) return nullptr;
 
 		if(token -> type != TOK_ROUND_RIGHT_BRACKET)
 			return error("expected ')'");
 		getNextToken(); // eat ')'
 
-		return expression;
+		return result;
 	}
 
 	ExpressionAST* Parser::parseBinOpRHS(int expressionPrec, ExpressionAST* LHS)
 	{
 		while(true)
 		{
-			int tokenPrec = 10; // TODO: fixme
+			int tokenPrec = getBinaryOpPrec(token -> type);
 
 			if(tokenPrec < expressionPrec)
 				return LHS;
 
-			//Token* binaryOp = token;
-			char binaryOp = '+';
-			getNextToken();
-			if(!isBinaryOperator(token -> type))
-				return LHS;
+			Type binaryOpType = token -> type;
+			getNextToken();						
 
-			if(token -> type != TOK_ROUND_RIGHT_BRACKET)
+			ExpressionAST* RHS = parsePrimary();
+			if(!RHS) return nullptr;
+
+			int nextTokenPrec = getBinaryOpPrec(token -> type);
+			if(tokenPrec < nextTokenPrec)
 			{
-				getNextToken();
-				ExpressionAST* RHS = parsePrimary();
-				if(!RHS)
-					return nullptr;
-
-				int nextTokenPrec = 10; // TODO: fixme
-				if(tokenPrec < nextTokenPrec)
-				{
-					RHS = parseBinOpRHS(tokenPrec+1, RHS);
-					if(RHS == nullptr)
-						return nullptr;
-				}
-				LHS = new BinaryOpAST(binaryOp, LHS, RHS);
+				RHS = parseBinOpRHS(tokenPrec+1, RHS);
+				if(!RHS) return nullptr;
 			}
-			else
-			{
-				break;
-			}	
-		}
-		return nullptr;
+
+			LHS = new BinaryOpAST(binaryOpType, LHS, RHS);			
+		}		
 	}
 
-	bool Parser::isBinaryOperator(Type type)
+	bool Parser::isBinaryOp(Type type)
 	{
 		switch(type)
-		{
-			case TOK_KW_AND:
-			case TOK_KW_OR:
+		{			
 			case TOK_OP_IMPLICATION:
 			case TOK_OP_MUL:
 			case TOK_OP_DIV:
@@ -380,7 +368,7 @@ namespace Coupe
 			*outputStream << "\tArguments: ";
 			
 			std::vector<std::string> args = prototype -> getArgs();
-			for(int i = 0; i < args.size(); ++i) {
+			for(unsigned int i = 0; i < args.size(); ++i) {
 				*outputStream << args[i] << (i+1 != args.size() ? ", " : "\n");				 				
 			}
 		}		
