@@ -1,22 +1,18 @@
 #include "CoupeScanner.h"
 
 #include "CoupeUtils.h"
-#include <iostream>
-#include <string>
 
 namespace Coupe
 {
-	// TODO: rewrite - use base istream!
-	void Scanner::setInputFile(std::string _filename)
+	void Scanner::setInputFile(std::string fileName)
 	{		
-		std::ifstream* currentFile = new std::ifstream();
-		currentFile -> open(_filename);
-		if(!currentFile -> is_open()) 
+		std::ifstream* file = new std::ifstream(fileName);
+		if(!file -> is_open()) 
 		{
-			std::cout << "Cannot open file: " << _filename << "!" << std::endl;
+			*outputStream << "Cannot open file: " << fileName << "!" << std::endl;
 		}
-		setInputStream(*currentFile);
-		currentPosition.set(1, 0);
+		setInputStream(*file);
+		position.set(1, 0);
 	}
 
 	void Scanner::setInputStream(std::istream& stream)
@@ -24,7 +20,7 @@ namespace Coupe
 		inputStream = &stream;
 	}
 
-	void Scanner::setVerbose(bool _verbose)
+	void Scanner::beVerbose(bool _verbose)
 	{
 		verbose = _verbose;
 	}
@@ -41,19 +37,18 @@ namespace Coupe
 		char currentChar;
 		std::string currentValue = "";
 		Position tokenPosition;
+
 		// get next chars and remove all whitespaces
 		do 
 		{
-			currentChar = inputStream -> get();
-			++currentPosition.col;
+			currentChar = getCharacter();
 
 			if(currentChar == '\n')
 			{
-				++currentPosition.row;
-				currentPosition.col = 0;
+				toNextRow();
 			}
 		} while (Utils::isWhitespace(currentChar));
-		tokenPosition.set(currentPosition.row, currentPosition.col);
+		tokenPosition.set(position.row, position.col);
 
 		// identifier or keyword
 		if(Utils::isCharacter(currentChar)) 
@@ -61,11 +56,9 @@ namespace Coupe
 			do 
 			{
 				currentValue.push_back(currentChar);
-				currentChar = inputStream -> get();
-				++currentPosition.col;
+				currentChar = getCharacter();
 			} while (Utils::isCharacter(currentChar) || Utils::isDigit(currentChar) || currentChar == '_');
-			inputStream -> unget();
-			--currentPosition.col;
+			ungetCharacter();
 			
 			std::string comparedValue = Utils::toLowerCase(currentValue);
 
@@ -90,11 +83,9 @@ namespace Coupe
 			do 
 			{
 				currentValue.push_back(currentChar);
-				currentChar = inputStream -> get();
-				++currentPosition.col;
+				currentChar = getCharacter();
 			} while (Utils::isDigit(currentChar));
-			inputStream -> unget();
-			--currentPosition.col;
+			ungetCharacter();
 
 			return createToken(TOK_INTEGER, currentValue, tokenPosition);
 		}
@@ -124,16 +115,14 @@ namespace Coupe
 			}
 			else if(currentChar == '-')
 			{
-				currentChar = inputStream -> get();
-				++currentPosition.col;
+				currentChar = getCharacter();
 
 				if(currentChar == '>')
 				{
 					currentValue.push_back(currentChar);
 					return createToken(TOK_OP_IMPLICATION, currentValue, tokenPosition);
 				}
-				inputStream -> unget();
-				--currentPosition.col;
+				ungetCharacter();
 
 				return createToken(TOK_OP_SUB, currentValue, tokenPosition);
 			}
@@ -159,37 +148,33 @@ namespace Coupe
 			}
 			else if(currentChar == '#')
 			{
-				currentChar = inputStream -> get();
-				currentValue.push_back(currentChar);
-				++currentPosition.col;												
+				currentChar = getCharacter();
+				currentValue.push_back(currentChar);															
 
 				if(currentChar == '!')
 				{					
 					// TODO: look for '!#'
 					do
 					{
-						currentChar = inputStream -> get();
-						currentValue.push_back(currentChar);
-						++currentPosition.col;
+						currentChar = getCharacter();
+						currentValue.push_back(currentChar);						
 
 						if(currentChar == '\n')
 						{
-							++currentPosition.row;
-							currentPosition.col = 0;
+							toNextRow();
 						}
 
 						if(currentChar == EOF)
 						{
-							inputStream -> unget();
-							--currentPosition.col;
+							ungetCharacter();
 							return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
 						}
 
 						if(currentChar == '!')
 						{
-							currentChar = inputStream -> get();
+							currentChar = getCharacter();
 							currentValue.push_back(currentChar);
-							++currentPosition.col;
+							
 
 							if(currentChar == '#')
 							{
@@ -198,14 +183,12 @@ namespace Coupe
 
 							if(currentChar == '\n')
 							{
-								++currentPosition.row;
-								currentPosition.col = 0;
+								toNextRow();
 							}
 
 							if(currentChar == EOF)
 							{
-								inputStream -> unget();
-								--currentPosition.col;
+								ungetCharacter();
 								return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
 							}
 						}
@@ -216,8 +199,7 @@ namespace Coupe
 					// TODO: make a method - if EOF then break
 					if(currentChar == EOF)
 					{
-						inputStream -> unget();
-						--currentPosition.col;					
+						ungetCharacter();			
 					}
 					else 
 					{
@@ -227,8 +209,7 @@ namespace Coupe
 							if(currentChar != '\n')
 								currentValue.push_back(currentChar);
 						}					
-						++currentPosition.row;
-						currentPosition.col = 0;
+						toNextRow();
 					}					
 
 					return createToken(TOK_COMMENT_LINE, currentValue, tokenPosition);
@@ -266,5 +247,23 @@ namespace Coupe
 		{
 			*outputStream << Utils::createTokenInfo(token) << std::endl;				
 		}		
+	}
+
+	char Scanner::getCharacter()
+	{
+		++position.col;
+		return inputStream -> get();		
+	}
+
+	void Scanner::ungetCharacter()
+	{
+		inputStream -> unget();
+		--position.col;
+	}
+
+	void Scanner::toNextRow()
+	{
+		++position.row;
+		position.col = 0;
 	}
 }

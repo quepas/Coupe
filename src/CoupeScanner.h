@@ -11,25 +11,29 @@ namespace Coupe
 	class Scanner
 	{
 		public:			
-			Scanner() : inputStream(&std::cin),
-						outputStream(&std::cout),
-						currentPosition(1, 0), 
-						verbose(false) {}	
+			Scanner() : position(1, 0), 
+						verbose(false),	
+						inputStream(&std::cin),
+						outputStream(&std::cout) {}	
 
-			void setInputFile(std::string _filename);
-			void setInputStream(std::istream& _stream);
-			void setOutputStream(std::istream& _stream);
-			void setVerbose(bool _verbose);
 			Token* getNext();			
+			void setInputFile(std::string fileName);
+			void setInputStream(std::istream& stream);
+			void setOutputStream(std::istream& stream);
+			void beVerbose(bool _verbose);
+
 		private:
-			Position currentPosition;			
+			Position position;						
+			bool verbose;
 			std::istream* inputStream;
 			std::ostream* outputStream;
-			bool verbose;
 
 			Token* getNextToken();
-			Token* createToken(Type type, std::string value, Position position);
+			Token* createToken(Type type, std::string value, Position position);			
 			void beVerboseAboutToken(Token* token);
+			char getCharacter();
+			void ungetCharacter();
+			void toNextRow();
 	};
 }
 

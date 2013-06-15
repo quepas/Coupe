@@ -5,7 +5,7 @@ extern := TOK_KW_EXTERN['extern'] prototype
 definition := TOK_KW_DEF prototype 
 				  expression 
 			  TOK_KW_END 
-maincode := expression 
+maincode := expression*
 
 prototype := TOK_IDENTIFIER 
 				TOK_ROUND_LEFT_BRACKET['('] 
