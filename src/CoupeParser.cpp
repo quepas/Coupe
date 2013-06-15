@@ -59,7 +59,7 @@ namespace Coupe
 
 	void Parser::parse()
 	{
-		if(!scanner)
+		if(scanner)
 		{					
 			getNextToken();
 			do 
@@ -86,7 +86,7 @@ namespace Coupe
 	void Parser::handleImport()
 	{		
 		ImportAST* result = parseImport();
-		if(!result)
+		if(result)
 			beVerboseAboutImport(result);	
 	}
 
@@ -108,7 +108,7 @@ namespace Coupe
 	void Parser::handleExtern()
 	{		
 		PrototypeAST* result = parseExtern();
-		if(!result)
+		if(result)
 			beVerboseAboutPrototype(result, true);
 	}
 
@@ -153,7 +153,7 @@ namespace Coupe
 	void Parser::handleDefinition()
 	{		
 		FunctionAST* result = parseDefinition();
-		if(!result) 
+		if(result) 
 			beVerboseAboutFunction(result);
 	}
 
@@ -161,10 +161,10 @@ namespace Coupe
 	{
 		getNextToken();	// eat before
 		PrototypeAST* prototype = parsePrototype();
-		if(!prototype)
+		if(prototype)
 		{			
 			ExpressionAST* body = parseExpression();
-			if(!body)
+			if(body)
 			{
 				getNextToken();
 				return new FunctionAST(prototype, body);

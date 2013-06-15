@@ -18,7 +18,8 @@ namespace Coupe
 					   token(nullptr),
 					   verbose(false),
 					   inputStream(&std::cin),
-					   outputStream(&std::cout) {}
+					   outputStream(&std::cout) 
+			{ initBinaryOpPrec(); }
 
 			void setInputFile(std::string filename);
 			void setInputStream(std::istream& stream);
