@@ -96,8 +96,8 @@ namespace Coupe
 	class PrototypeAST
 	{
 		public:
-			PrototypeAST(std::string _name, const std::vector<std::string>& _args)
-				: name(_name), args(_args) {}
+			PrototypeAST(std::string _name, const std::vector<std::string>& _args, llvm::Type* _returnType = nullptr)
+				: name(_name), args(_args), returnType(_returnType) {}
 			virtual llvm::Function* Codegen();
 
 			std::string getName() { return name; }
@@ -105,6 +105,7 @@ namespace Coupe
 		private:
 			std::string name;
 			std::vector<std::string> args;
+			llvm::Type* returnType;
 	};
 
 	class FunctionAST

@@ -30,12 +30,14 @@ namespace Coupe
 			llvm::Value* generateVariable(std::string name);
 			llvm::Value* generateBinaryOp(Type op, ExpressionAST* LHS, ExpressionAST* RHS);
 			llvm::Value* generateCall(std::string callee, const std::vector<ExpressionAST*>& args);
-			llvm::Function* generatePrototype(std::string name, const std::vector<std::string>& args);
+			llvm::Function* generatePrototype(std::string name, const std::vector<std::string>& args, llvm::Type* returnType = nullptr);
 			llvm::Function* generateFunction(PrototypeAST* prototype, ExpressionAST* body);
 			llvm::Value* generateImport(std::string name);
 			
 			llvm::Value* errorV(std::string msg);
 			llvm::Function* errorF(std::string msg);
+
+			void beVerbose(bool verbose);
 
 			static CodeGen& getInstance()
 			{
@@ -45,16 +47,19 @@ namespace Coupe
 		private:
 			CodeGen() : outputStream(&std::cout),
 						mainModule(new llvm::Module("CoupeModule", llvm::getGlobalContext())),
-						builder(llvm::getGlobalContext()) {}
+						builder(llvm::getGlobalContext()),
+						verbose(false) {}
 			CodeGen(const CodeGen&) : builder(llvm::getGlobalContext()) {}
 			CodeGen& operator=(const CodeGen&) {}
 			
 			std::ostream* outputStream;
+			bool verbose;
 
 			llvm::Module* mainModule;
 			llvm::IRBuilder<> builder;
 			std::map<std::string, llvm::Value*> namedValues;			
 
+			void beVerboseAbout(std::string msg);
 	};
 }
 

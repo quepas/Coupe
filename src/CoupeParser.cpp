@@ -43,13 +43,14 @@ namespace Coupe
 		inputStream = &_stream;
 		scanner = new Scanner();
 		scanner -> setInputStream(*inputStream);
-		scanner -> beVerbose(verbose);
+		beVerbose(verbose);
 	}
 
 	void Parser::beVerbose(bool _verbose)
 	{
 		verbose = _verbose;
 		scanner -> beVerbose(_verbose);
+		CodeGen::getInstance().beVerbose(_verbose);
 	}
 
 	Token* Parser::getNextToken()
@@ -110,9 +111,16 @@ namespace Coupe
 
 	void Parser::handleExtern()
 	{		
-		PrototypeAST* result = parseExtern();
-		if(result)
-			beVerboseAboutPrototype(result, true);
+		PrototypeAST* prototype = parseExtern();
+		if(prototype)
+		{
+			llvm::Function* LF = prototype -> Codegen();
+			if(LF)
+			{
+				beVerboseAboutPrototype(prototype, true);
+				LF -> dump();
+			}			
+		}		
 	}
 
 	PrototypeAST* Parser::parseExtern()
@@ -155,9 +163,16 @@ namespace Coupe
 	
 	void Parser::handleDefinition()
 	{		
-		FunctionAST* result = parseDefinition();
-		if(result) 
-			beVerboseAboutFunction(result);
+		FunctionAST* function = parseDefinition();
+		if(function)
+		{
+			llvm::Function* LF = function -> Codegen();
+			if(LF)
+			{
+				beVerboseAboutFunction(function);
+				LF -> dump();
+			}
+		}
 	}
 
 	FunctionAST* Parser::parseDefinition()
@@ -243,10 +258,12 @@ namespace Coupe
 		ExpressionAST* result = nullptr;
 		switch(token -> type)
 		{
-			case TOK_INTEGER:
+			case TOK_INTEGER:				
 				result = new NumberAST(lexical_cast<int>(token -> value.data));
-			case TOK_DOUBLE:
+				break;
+			case TOK_DOUBLE:				
 				result = new NumberAST(lexical_cast<double>(token -> value.data));
+				break;
 		}
 		getNextToken(); // eat number
 		return result;
@@ -309,11 +326,11 @@ namespace Coupe
 	FunctionAST* Parser::parseTopLevelExpression()
 	{
 		ExpressionAST* instructions = parseExpression();
-		
+				
 		if(instructions)
 		{
 			PrototypeAST* anonymousPrototype = 
-				new PrototypeAST("", std::vector<std::string>());
+				new PrototypeAST("", std::vector<std::string>(), instructions -> Codegen() -> getType());
 			return new FunctionAST(anonymousPrototype, instructions);
 		}
 		return nullptr;

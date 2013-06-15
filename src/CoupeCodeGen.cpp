@@ -17,20 +17,23 @@ namespace Coupe
 
 	llvm::Value* CodeGen::generateNumber(NumberValue number)
 	{
+		beVerboseAbout("CodeGen::generateNumber()");
 		if(number.type == NumberValue::INTEGER)
-			return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, number.value.i));
+			return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, number.value.i));					
 		else // NumberValue::DOUBLE
 			return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(number.value.d));				
 	}
 
 	llvm::Value* CodeGen::generateVariable(std::string name)
 	{		
+		beVerboseAbout("CodeGen::generateVariable()");
 		llvm::Value* result = namedValues[name];		
 		return result ? result : errorV("Unknown variable name");
 	}
 
 	llvm::Value* CodeGen::generateBinaryOp(Type op, ExpressionAST* LHS, ExpressionAST* RHS)
 	{
+		beVerboseAbout("CodeGen::generateBinaryOp()");
 		llvm::Value* L = LHS -> Codegen();
 		llvm::Value* R = RHS -> Codegen();
 
@@ -93,10 +96,12 @@ namespace Coupe
 					return errorV("invalid binary operator");
 			}
 		}
+		return nullptr;
 	}
 
 	llvm::Value* CodeGen::generateCall(std::string callee, const std::vector<ExpressionAST*>& args)
 	{
+		beVerboseAbout("CodeGen::generateCall()");
 		llvm::Function *calleeF = mainModule -> getFunction(callee);
 
 		if(!calleeF)
@@ -113,10 +118,14 @@ namespace Coupe
 		return builder.CreateCall(calleeF, argsValues, "calltmp");
 	}
 
-	llvm::Function* CodeGen::generatePrototype(std::string name, const std::vector<std::string>& args)
+	llvm::Function* CodeGen::generatePrototype(std::string name, const std::vector<std::string>& args, llvm::Type* returnType /* = nullptr */)
 	{
+		beVerboseAbout("CodeGen::generatePrototype()");
 		std::vector<llvm::Type*> doubles(args.size(), llvm::Type::getDoubleTy(llvm::getGlobalContext()));
-		llvm::FunctionType* functionType = llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm::getGlobalContext()), doubles, false);
+		llvm::FunctionType* functionType;
+		
+		functionType = (!returnType ? llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()), doubles, false)
+								    : llvm::FunctionType::get(returnType, doubles, false));
 		llvm::Function* function = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, name,	mainModule);
 
 		if(function -> getName() != name)
@@ -141,6 +150,7 @@ namespace Coupe
 
 	llvm::Function* CodeGen::generateFunction(PrototypeAST* prototype, ExpressionAST* body)
 	{
+		beVerboseAbout("CodeGen::generateFunction()");
 		namedValues.clear();
 		llvm::Function* function = prototype -> Codegen();
 		if(!function) return nullptr;
@@ -174,5 +184,16 @@ namespace Coupe
 	{
 		*outputStream << "[CodeGen Function] Error: " << msg << std::endl;
 		return nullptr;
+	}
+
+	void CodeGen::beVerbose(bool _verbose)
+	{
+		verbose = _verbose;
+	}
+
+	void CodeGen::beVerboseAbout(std::string msg)
+	{
+		if(verbose)
+			*outputStream << msg << std::endl;
 	}
 }

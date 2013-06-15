@@ -44,7 +44,7 @@ namespace Coupe
 
 	llvm::Function* PrototypeAST::Codegen()
 	{
-		return CodeGen::getInstance().generatePrototype(name, args);
+		return CodeGen::getInstance().generatePrototype(name, args, returnType);
 	}
 	
 	llvm::Function* FunctionAST::Codegen()
