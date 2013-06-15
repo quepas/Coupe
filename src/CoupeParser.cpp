@@ -7,11 +7,10 @@ namespace Coupe
 {
 	void Parser::setInputFile(std::string filename)
 	{
-		std::ifstream* currentFile = new std::ifstream();
-		currentFile -> open(filename);
+		std::ifstream* currentFile = new std::ifstream(filename);
 		if(!currentFile -> is_open())
 		{
-			std::cout << "Cannot open file: " << filename << "!" << std::endl;
+			*outputStream << "Cannot open file: " << filename << "!" << std::endl;
 		}
 		setInputStream(*currentFile);
 	}
@@ -21,38 +20,13 @@ namespace Coupe
 		inputStream = &_stream;
 		scanner = new Scanner();
 		scanner -> setInputStream(*inputStream);
+		scanner -> beVerbose(verbose);
 	}
 
-	void Parser::setVerbose(bool _verbose)
+	void Parser::beVerbose(bool _verbose)
 	{
 		verbose = _verbose;
-	}
-
-	void Parser::parse()
-	{
-		if(scanner != nullptr)
-		{
-			getNextToken();
-			do 
-			{				
-				// main products (coupe := ...)
-				switch(token -> type)
-				{
-					case TOK_KW_IMPORT:
-						handleImport();
-						break;
-					case TOK_KW_EXTERN:
-						handleExternal();
-						break;
-					case TOK_KW_DEF:
-						handleDefinition();
-						break;
-					default:
-						handleMainCode();			
-						break;
-				}
-			} while (token -> type != TOK_EOF);			
-		}
+		scanner -> beVerbose(_verbose);
 	}
 
 	Token* Parser::getNextToken()
@@ -60,9 +34,35 @@ namespace Coupe
 		return token = scanner -> getNext();
 	}
 
-	void Parser::handleImport()
+	void Parser::parse()
 	{
-		beVerboseAboutHandling("Import");
+		if(scanner != nullptr)
+		{					
+			do 
+			{								
+				// main products (coupe := ...)
+				getNextToken();
+				switch(token -> type)
+				{
+					case TOK_KW_IMPORT:
+						handleImport();
+						break;
+					case TOK_KW_EXTERN:
+						handleExtern();
+						break;
+					case TOK_KW_DEF:
+						handleDefinition();
+						break;
+					default:
+						//handleMainCode();			
+						break;
+				}
+			} while (token -> type != TOK_EOF);			
+		}
+	}	
+
+	void Parser::handleImport()
+	{		
 		ImportAST* result = parseImport();
 		if(result != nullptr)
 		{
@@ -75,9 +75,9 @@ namespace Coupe
 		getNextToken();
 		if(token -> type == TOK_IDENTIFIER)
 		{
-			// TODO: mind about correct value.type 
-			getNextToken();
-			return new ImportAST(token -> value.data);
+			std::string importName = token -> value.data;	
+			//getNextToken(); // eat identifier
+			return new ImportAST(importName);
 		}
 		else
 		{			
@@ -85,19 +85,18 @@ namespace Coupe
 		}				
 	}
 
-	void Parser::handleExternal()
-	{
-		beVerboseAboutHandling("External");
+	void Parser::handleExtern()
+	{		
 		PrototypeAST* result = parseExtern();
 		if(result != nullptr)
 		{
-			beVerboseAboutPrototype(result);
+			beVerboseAboutPrototype(result, true);
 		}
 	}
 
 	PrototypeAST* Parser::parseExtern()
 	{
-		getNextToken();	// eat before
+		getNextToken();
 		return parsePrototype();
 	}
 
@@ -129,17 +128,16 @@ namespace Coupe
 		{
 			return errorP("expected ')' in prototype", token -> position);
 		}
-		getNextToken(); // eat some ')'
+		//getNextToken(); // eat some ')'
 		return new PrototypeAST(functionName, args);
 	}
 	
 	void Parser::handleDefinition()
-	{
-		beVerboseAboutHandling("Definition");
+	{		
 		FunctionAST* result = parseDefinition();
 		if(result != nullptr)
 		{
-			beVerboseAboutDefinition(result);
+			beVerboseAboutFunction(result);
 		}
 	}
 
@@ -149,6 +147,7 @@ namespace Coupe
 		PrototypeAST* prototype = parsePrototype();
 		if(prototype != nullptr)
 		{
+			getNextToken();
 			ExpressionAST* body = parseExpression();
 			if(body != nullptr)
 			{
@@ -157,7 +156,7 @@ namespace Coupe
 			}
 			else 
 			{
-				errorF("Warning: no function body near place", token -> position);
+				errorF("no function body near place", token -> position);
 			}
 		}	
 		return nullptr;
@@ -171,8 +170,7 @@ namespace Coupe
 			return nullptr;
 		}
 
-		getNextToken();	
-		// TODO: refractor, end of expression should be find better
+		//getNextToken();	
 		if(isBinaryOperator(token -> type))
 		{
 			return parseBinOpRHS(0, LHS);
@@ -205,7 +203,7 @@ namespace Coupe
 
 		if(token -> type != TOK_ROUND_LEFT_BRACKET)
 		{
-			new VariableAST(identifier);
+			return new VariableAST(identifier);
 		} 
 		else
 		{
@@ -230,7 +228,7 @@ namespace Coupe
 			}
 			getNextToken(); // Eat ')'
 			return new CallAST(identifier, args);
-		}		
+		}			
 	}
 
 	ExpressionAST* Parser::parseNumber()
@@ -273,9 +271,12 @@ namespace Coupe
 			//Token* binaryOp = token;
 			char binaryOp = '+';
 			getNextToken();
+			if(!isBinaryOperator(token -> type))
+				return LHS;
 
 			if(token -> type != TOK_ROUND_RIGHT_BRACKET)
 			{
+				getNextToken();
 				ExpressionAST* RHS = parsePrimary();
 				if(!RHS)
 					return nullptr;
@@ -320,74 +321,89 @@ namespace Coupe
 
 	void Parser::handleMainCode()
 	{
-		beVerboseAboutHandling("MainCode");		
+		// TODO:
+		*outputStream << "handleMainCode" << std::endl;
 	}
 
 	// error functions
 	ExpressionAST* Parser::error(std::string msg, Position position /* = Position(0, 0) */)
 	{
-		*outputStream << prepareErrorMsg(msg, position) << std::endl;
+		showErrorMessage(msg, position);
 		return nullptr;
 	}
 
 	ImportAST* Parser::errorI(std::string msg, Position position /* = Position(0, 0) */)
 	{
-		*outputStream << prepareErrorMsg(msg, position) << std::endl;
+		showErrorMessage(msg, position);
 		return nullptr;
 	}
 
 	PrototypeAST* Parser::errorP(std::string msg, Position position /* = Position(0, 0) */)
 	{
-		*outputStream << prepareErrorMsg(msg, position) << std::endl;
+		showErrorMessage(msg, position);
 		return nullptr;
 	}
 
 	FunctionAST* Parser::errorF(std::string msg, Position position /* = Position(0, 0) */)
 	{
-		*outputStream << prepareErrorMsg(msg, position) << std::endl;
+		showErrorMessage(msg, position);
 		return nullptr;
 	}
 
-	std::string Parser::prepareErrorMsg(std::string msg, Position position)
+	void Parser::showErrorMessage(std::string msg, Position position)
 	{
 		msg = "Error: " + msg;
 		if(position.row != 0 || position.col != 0)
 		{
-			return msg + " at [" + lexical_cast<std::string>(position.row) 
-				+ ", " + lexical_cast<std::string>(position.col) + "]";
+			msg.append(msg + " at [" + lexical_cast<std::string>(position.row) 
+				+ ", " + lexical_cast<std::string>(position.col) + "]");
 		}
-		return msg;
+		*outputStream << msg << std::endl;
 	}
-
-	void Parser::beVerboseAboutHandling(std::string name)
-	{
-		if(verbose)
-		{
-			*outputStream << "Parser::handle" << name << "()" << std::endl;
-		}		
-	}
-
+	
 	void Parser::beVerboseAboutImport(ImportAST* import)
 	{
 		if(verbose)
 		{
-			*outputStream << "beVerboseAboutImport() // TODO" << std::endl;
+			*outputStream << "[Import]: Successfully parsed!" << std::endl;
+			*outputStream << "\tName: " << import -> getName() << std::endl;
 		}		
 	}
 
-	void Parser::beVerboseAboutPrototype(PrototypeAST* prototype)
+	void Parser::beVerboseAboutPrototype(PrototypeAST* prototype, bool isExternal /* = false */)
 	{
 		if(verbose)
-		{
-			*outputStream << "beVerboseAboutPrototype() // TODO" << std::endl;
+		{			
+			*outputStream << "[Prototype]: Successfully parsed!" << std::endl;
+			*outputStream << "\tName: " << prototype -> getName() << std::endl;
+			*outputStream << "\tExternal: " << (isExternal ? "yes" : "no") << std::endl;
+			*outputStream << "\tArguments: ";
+			
+			std::vector<std::string> args = prototype -> getArgs();
+			for(int i = 0; i < args.size(); ++i) {
+				*outputStream << args[i] << (i+1 != args.size() ? ", " : "\n");				 				
+			}
 		}		
 	}
 
-	void Parser::beVerboseAboutDefinition(FunctionAST* definition)
+	void Parser::beVerboseAboutFunction(FunctionAST* function)
 	{
 		if(verbose)
 		{
-			*outputStream << "beVerboseAboutDefinition() // TODO" << std::endl; 
+			*outputStream << "--------------------------------------------------" << std::endl;
+			*outputStream << "[Function]: Successfully parsed!" << std::endl; 
+			beVerboseAboutPrototype(function -> getPrototype());
+			beVerboseAboutExpression(function -> getBody());
+			*outputStream << "--------------------------------------------------" << std::endl;
+		}
+	}
+
+	void Parser::beVerboseAboutExpression(ExpressionAST* expression)
+	{
+		if(verbose)
+		{
+			// TODO:
+			*outputStream << "being verbose about expression" << std::endl;			
 		}
 	}
 }

@@ -77,155 +77,127 @@ namespace Coupe
 			return createToken(TOK_IDENTIFIER, currentValue, tokenPosition);
 		} 
 		// number
-		else if (Utils::isDigit(currentChar))
-		{
-			// TODO: add non-fixed numbers processing
+		else if(Utils::isDigit(currentChar))
+		{			
+			bool isDouble = false;
+
 			do 
 			{
 				currentValue.push_back(currentChar);
 				currentChar = getCharacter();
+
+				if(currentChar == '.')
+				{
+					isDouble = true;
+					currentValue.push_back(currentChar);
+					currentChar = getCharacter();
+				}
 			} while (Utils::isDigit(currentChar));
 			ungetCharacter();
 
+			if(isDouble)
+			{
+				return createToken(TOK_DOUBLE, currentValue, tokenPosition);
+			}
 			return createToken(TOK_INTEGER, currentValue, tokenPosition);
 		}
 		// special characters
 		else
 		{
 			currentValue.push_back(currentChar);
-			if(currentChar == '(')
-			{
-				return createToken(TOK_ROUND_LEFT_BRACKET, currentValue, tokenPosition);
-			}
-			else if(currentChar == ')')
-			{
-				return createToken(TOK_ROUND_RIGHT_BRACKET, currentValue, tokenPosition); 
-			}
-			else if(currentChar == '*')
-			{
-				return createToken(TOK_OP_MUL, currentValue, tokenPosition);
-			}
-			else if(currentChar == '/')
-			{
-				return createToken(TOK_OP_DIV, currentValue, tokenPosition);
-			}
-			else if(currentChar == '%')
-			{
-				return createToken(TOK_OP_MOD, currentValue, tokenPosition);
-			}
-			else if(currentChar == '-')
-			{
-				currentChar = getCharacter();
 
-				if(currentChar == '>')
-				{
-					currentValue.push_back(currentChar);
-					return createToken(TOK_OP_IMPLICATION, currentValue, tokenPosition);
-				}
-				ungetCharacter();
+			switch(currentChar) 
+			{
+				case '(':
+					return createToken(TOK_ROUND_LEFT_BRACKET, currentValue, tokenPosition);
+				case ')':
+					return createToken(TOK_ROUND_RIGHT_BRACKET, currentValue, tokenPosition); 
+				case '*':
+					return createToken(TOK_OP_MUL, currentValue, tokenPosition);
+				case '/':
+					return createToken(TOK_OP_DIV, currentValue, tokenPosition);
+				case '%':
+					return createToken(TOK_OP_MOD, currentValue, tokenPosition);
+				case '-':
+					currentChar = getCharacter();
 
-				return createToken(TOK_OP_SUB, currentValue, tokenPosition);
-			}
-			else if(currentChar == '+')
-			{
-				return createToken(TOK_OP_ADD, currentValue, tokenPosition);
-			}
-			else if(currentChar == '^')
-			{
-				return createToken(TOK_OP_POWER, currentValue, tokenPosition);
-			}
-			else if(currentChar == ',')
-			{
-				return createToken(TOK_COMMA, currentValue, tokenPosition);
-			}
-			else if(currentChar == '<')
-			{
-				return createToken(TOK_OP_LESS, currentValue, tokenPosition);
-			}
-			else if(currentChar == '>')
-			{
-				return createToken(TOK_OP_MORE, currentValue, tokenPosition);
-			}
-			else if(currentChar == '#')
-			{
-				currentChar = getCharacter();
-				currentValue.push_back(currentChar);															
-
-				if(currentChar == '!')
-				{					
-					// TODO: look for '!#'
-					do
+					if(currentChar == '>')
 					{
-						currentChar = getCharacter();
-						currentValue.push_back(currentChar);						
+						currentValue.push_back(currentChar);
+						return createToken(TOK_OP_IMPLICATION, currentValue, tokenPosition);
+					}
+					ungetCharacter();
 
-						if(currentChar == '\n')
-						{
-							toNextRow();
-						}
+					return createToken(TOK_OP_SUB, currentValue, tokenPosition);
+				case '+':
+					return createToken(TOK_OP_ADD, currentValue, tokenPosition);
+				case '^':
+					return createToken(TOK_OP_POWER, currentValue, tokenPosition);
+				case ',':
+					return createToken(TOK_COMMA, currentValue, tokenPosition);
+				case '<':
+					return createToken(TOK_OP_LESS, currentValue, tokenPosition);
+				case '>':
+					return createToken(TOK_OP_MORE, currentValue, tokenPosition);
+				case '#':
+					currentChar = getCharacter();
+					currentValue.push_back(currentChar);															
 
-						if(currentChar == EOF)
-						{
-							ungetCharacter();
-							return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
-						}
-
-						if(currentChar == '!')
+					if(currentChar == '!')
+					{										
+						do
 						{
 							currentChar = getCharacter();
-							currentValue.push_back(currentChar);
-							
+							currentValue.push_back(currentChar);						
 
-							if(currentChar == '#')
+							switch(currentChar)
 							{
-								return createToken(TOK_COMMENT_SECTION, currentValue, tokenPosition);
-							}
+								case '\n':
+									toNextRow();
+								case EOF:
+									ungetCharacter();
+									return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
+								case '!':
+									currentChar = getCharacter();
+									currentValue.push_back(currentChar);							
 
-							if(currentChar == '\n')
-							{
-								toNextRow();
-							}
-
-							if(currentChar == EOF)
-							{
-								ungetCharacter();
-								return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
-							}
-						}
-					} while(true);					
-				}				
-				else
-				{					
-					// TODO: make a method - if EOF then break
-					if(currentChar == EOF)
-					{
-						ungetCharacter();			
-					}
-					else 
-					{
-						while(currentChar != '\n')
+									switch(currentChar)
+									{
+										case '#':
+											return createToken(TOK_COMMENT_SECTION, currentValue, tokenPosition);
+										case '\n':
+											toNextRow();
+										case EOF:
+											ungetCharacter();
+											return createToken(TOK_ERROR, currentValue + " - missing !#", tokenPosition);
+									}									
+							}													
+						} while(true);					
+					}				
+					else
+					{										
+						if(currentChar == EOF)
 						{
-							currentChar = inputStream -> get();
-							if(currentChar != '\n')
-								currentValue.push_back(currentChar);
+							ungetCharacter();			
+						}
+						else 
+						{
+							while(currentChar != '\n')
+							{
+								currentChar = inputStream -> get();
+								if(currentChar != '\n')
+									currentValue.push_back(currentChar);
+							}					
+							toNextRow();
 						}					
-						toNextRow();
-					}					
 
-					return createToken(TOK_COMMENT_LINE, currentValue, tokenPosition);
-				}
-			}			
-			else if(currentChar == EOF)
-			{
-				return createToken(TOK_EOF, currentValue, tokenPosition);
+						return createToken(TOK_COMMENT_LINE, currentValue, tokenPosition);
+					}
+				case EOF:
+					return createToken(TOK_EOF, currentValue, tokenPosition);
 			}
-			else
-			{
-				return createToken(TOK_ERROR, currentValue, tokenPosition);
-			}
+			return createToken(TOK_ERROR, currentValue, tokenPosition);			
 		}
-
-		return NULL;
 	}
 
 	Token* Scanner::createToken(Type type, std::string value, Position position)
@@ -245,7 +217,7 @@ namespace Coupe
 	{
 		if(verbose)
 		{
-			*outputStream << Utils::createTokenInfo(token) << std::endl;				
+			*outputStream << "* " << Utils::createTokenInfo(token) << std::endl;				
 		}		
 	}
 

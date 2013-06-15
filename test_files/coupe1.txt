@@ -1,5 +1,5 @@
 import patterns
-extern getchar (asd asd)
-def ret2(x)
-	asd(2)
+extern pow(base power)
+def pow(base power)
+	base
 end

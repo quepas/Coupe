@@ -1,42 +1,46 @@
 #ifndef COUPE_PARSER_H_
 #define COUPE_PARSER_H_
 
-#include "AST/CoupeASTDef.h"
 #include "CoupeScanner.h"
+#include "CoupeCodeGen.h"
+
+#include "AST/CoupeASTDef.h"
 
 namespace Coupe
 {
 	class Parser
 	{
 		public:
-			Parser() : inputStream(&std::cin),
-					   outputStream(&std::cout),
+			Parser() : scanner(new Scanner()),
+					   codeGen(nullptr),
 					   token(nullptr),
-					   scanner(nullptr),
-					   verbose(false) {}
+					   verbose(false),
+					   inputStream(&std::cin),
+					   outputStream(&std::cout) {}
 
 			void setInputFile(std::string filename);
 			void setInputStream(std::istream& stream);
 			void setOutputStream(std::ostream& stream);
-			void setVerbose(bool verbose);
+			void beVerbose(bool verbose);
 			void parse();
 			
 		private:
 			Scanner* scanner;	
-			std::istream* inputStream;
-			std::ostream* outputStream;
+			CodeGen* codeGen;
 			Token* token;
 			bool verbose;
+			std::istream* inputStream;
+			std::ostream* outputStream;			
 
 			Token* getNextToken();
 
 			// handling main products
 			void handleImport();
-			void handleExternal();
+			void handleExtern();
 			void handleDefinition();			
 			void handleMainCode();			
 
-			// each method represent parsing one grammar product		
+			// parsing sub-product		
 			ExpressionAST* parseNumber();
 			ExpressionAST* parseIdentifier();
 			ExpressionAST* parseParenthesis();
@@ -57,13 +61,12 @@ namespace Coupe
 			PrototypeAST* errorP(std::string msg, Position position = Position(0, 0));
 			FunctionAST* errorF(std::string msg, Position position = Position(0, 0));
 			ImportAST* errorI(std::string msg, Position position = Position(0, 0));
-			std::string prepareErrorMsg(std::string msg, Position position);
+			void showErrorMessage(std::string msg, Position position);
 
-			// verbose functions			
-			void beVerboseAboutHandling(std::string name);
+			// verbose functions						
 			void beVerboseAboutExpression(ExpressionAST* expression);
-			void beVerboseAboutPrototype(PrototypeAST* prototype);
-			void beVerboseAboutDefinition(FunctionAST* function);
+			void beVerboseAboutPrototype(PrototypeAST* prototype, bool isExternal = false);
+			void beVerboseAboutFunction(FunctionAST* function);
 			void beVerboseAboutImport(ImportAST* import);
 	};
 }

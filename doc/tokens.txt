@@ -27,6 +27,6 @@ Coupe tokens list:
 25. TOK_OP_POWER - "^"
 26. TOK_COMMENT_LINE - (\#.*) (to end of line)
 27. TOK_COMMENT_SECTION - (\#\!.*\!\#)
-28. TOK_COMMA - \.
+28. TOK_COMMA - \,
 29. TOK_OP_LESS - "<"
 30. TOK_OP_MORE - ">"

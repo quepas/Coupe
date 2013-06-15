@@ -4,9 +4,7 @@
 #include <string>
 
 namespace Coupe
-{
-	// token related errors
-
+{	
 	struct Position
 	{
 		Position() : row(0), col(0) {}
@@ -19,14 +17,14 @@ namespace Coupe
 			row = _row;
 			col = _col;
 		}
-	};
+	};	
 
 	struct Value
 	{
 		enum Type 
 		{
 			INTEGER,
-			FLOAT,
+			DOUBLE,
 			CHAR,
 			STRING
 		};
@@ -74,9 +72,8 @@ namespace Coupe
 		TOK_COMMENT_SECTION,
 
 		TOK_COMMA
-	};
+	};	
 
-	// for scanner purpose
 	struct Token
 	{
 		Type type;
