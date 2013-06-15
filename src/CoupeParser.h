@@ -14,7 +14,7 @@ namespace Coupe
 	{
 		public:
 			Parser() : scanner(new Scanner()),
-					   codeGen(nullptr),
+					   codeGen(CodeGen::getInstance()),
 					   token(nullptr),
 					   verbose(false),
 					   inputStream(&std::cin),
@@ -29,7 +29,7 @@ namespace Coupe
 			
 		private:
 			Scanner* scanner;	
-			CodeGen* codeGen;
+			CodeGen& codeGen;
 			Token* token;
 			bool verbose;
 			std::istream* inputStream;

@@ -30,3 +30,4 @@ Coupe tokens list:
 28. TOK_COMMA - \,
 29. TOK_OP_LESS - "<"
 30. TOK_OP_MORE - ">"
+31. TOK_SEMICOLON - ";"

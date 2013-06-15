@@ -1,7 +1,6 @@
 #ifndef COUPE_CODE_GEN_H_
 #define COUPE_CODE_GEN_H_
 
-#include "CoupeValueDef.h"
 #include "AST/CoupeASTDef.h"
 
 #include <llvm/Value.h>
@@ -16,6 +15,7 @@
 
 namespace Coupe
 {
+	struct NumberValue;
 	class ExpressionAST;
 	class PrototypeAST;
 
@@ -26,15 +26,16 @@ namespace Coupe
 			void setOutputStream(std::ostream& stream);
 
 			// TODO: what about int?
-			llvm::Value* generateNumber(double number);
+			llvm::Value* generateNumber(NumberValue number);
 			llvm::Value* generateVariable(std::string name);
-			llvm::Value* generateBinaryOp(char op, ExpressionAST* LHS, ExpressionAST* RHS);
+			llvm::Value* generateBinaryOp(Type op, ExpressionAST* LHS, ExpressionAST* RHS);
 			llvm::Value* generateCall(std::string callee, const std::vector<ExpressionAST*>& args);
-			llvm::Value* generatePrototype(std::string name, const std::vector<std::string>& args);
-			llvm::Value* generateFunction(PrototypeAST* prototype, ExpressionAST* body);
+			llvm::Function* generatePrototype(std::string name, const std::vector<std::string>& args);
+			llvm::Function* generateFunction(PrototypeAST* prototype, ExpressionAST* body);
 			llvm::Value* generateImport(std::string name);
 			
 			llvm::Value* errorV(std::string msg);
+			llvm::Function* errorF(std::string msg);
 
 			static CodeGen& getInstance()
 			{
@@ -43,7 +44,7 @@ namespace Coupe
 			}
 		private:
 			CodeGen() : outputStream(&std::cout),
-						mainModule(nullptr),
+						mainModule(new llvm::Module("CoupeModule", llvm::getGlobalContext())),
 						builder(llvm::getGlobalContext()) {}
 			CodeGen(const CodeGen&) : builder(llvm::getGlobalContext()) {}
 			CodeGen& operator=(const CodeGen&) {}

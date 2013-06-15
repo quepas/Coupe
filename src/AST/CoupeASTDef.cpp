@@ -1,11 +1,7 @@
 #include "CoupeASTDef.h"
+
 #include "../CoupeCodeGen.h"
 #include "../CoupeUtils.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/IRBuilder.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/DerivedTypes.h"
 
 namespace Coupe
 {
@@ -13,12 +9,6 @@ namespace Coupe
 	{
 		number.value.i = value;
 		number.type = NumberValue::INTEGER;
-	}
-
-	NumberAST::NumberAST(float value)
-	{
-		number.value.f = value;
-		number.type = NumberValue::FLOAT;
 	}
 
 	NumberAST::NumberAST(double value)
@@ -29,7 +19,7 @@ namespace Coupe
 
 	llvm::Value* NumberAST::Codegen()
 	{		
-		return CodeGen::getInstance().generateNumber(number.value.d);
+		return CodeGen::getInstance().generateNumber(number);
 	}
 
 	llvm::Value* VariableAST::Codegen()
@@ -52,12 +42,12 @@ namespace Coupe
 		return CodeGen::getInstance().generateCall(callee, args);
 	}
 
-	llvm::Value* PrototypeAST::Codegen()
+	llvm::Function* PrototypeAST::Codegen()
 	{
 		return CodeGen::getInstance().generatePrototype(name, args);
 	}
 	
-	llvm::Value* FunctionAST::Codegen()
+	llvm::Function* FunctionAST::Codegen()
 	{
 		return CodeGen::getInstance().generateFunction(prototype, body);
 	}	

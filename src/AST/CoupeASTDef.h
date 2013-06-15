@@ -2,6 +2,8 @@
 #define DEFINITIONS_AST_H_
 
 #include <llvm\Value.h>
+#include <llvm\Function.h>
+
 #include "../CoupeToken.h"
 
 #include <string>
@@ -13,15 +15,13 @@ namespace Coupe
 	{
 		union UnionNumber
 		{
-			int i;
-			float f;
+			int i;			
 			double d;
 		};
 
 		enum Type
 		{
-			INTEGER,
-			FLOAT,
+			INTEGER,			
 			DOUBLE
 		};
 
@@ -98,7 +98,7 @@ namespace Coupe
 		public:
 			PrototypeAST(std::string _name, const std::vector<std::string>& _args)
 				: name(_name), args(_args) {}
-			virtual llvm::Value* Codegen();
+			virtual llvm::Function* Codegen();
 
 			std::string getName() { return name; }
 			std::vector<std::string>& getArgs() { return args; }
@@ -112,7 +112,7 @@ namespace Coupe
 		public:
 			FunctionAST(PrototypeAST* _prototype, ExpressionAST* _body)
 				: prototype(_prototype), body(_body) {}
-			virtual llvm::Value* Codegen();
+			virtual llvm::Function* Codegen();
 
 			PrototypeAST* getPrototype() { return prototype; }
 			ExpressionAST* getBody() { return body; }

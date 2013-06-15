@@ -5,13 +5,13 @@ extern := TOK_KW_EXTERN['extern'] prototype
 definition := TOK_KW_DEF prototype 
 				  expression 
 			  TOK_KW_END 
-maincode := expression*
+maincode := expression // TODO: body := expression*
 
 prototype := TOK_IDENTIFIER 
 				TOK_ROUND_LEFT_BRACKET['('] 
 					TOK_IDENTIFIER* 
 				TOK_ROUND_RIGHT_BRACKET[')'] 
-expression := (primary binoprhs*)*
+expression := primary binoprhs*
 
 primary := identifierExpr | numberExpr | parenthesisExpr
 identifierExpr := TOK_IDENTIFIER | 

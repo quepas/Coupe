@@ -135,6 +135,8 @@ namespace Coupe
 					return createToken(TOK_OP_POWER, currentValue, tokenPosition);
 				case ',':
 					return createToken(TOK_COMMA, currentValue, tokenPosition);
+				case ';':
+					return createToken(TOK_SEMICOLON, currentValue, tokenPosition);
 				case '<':
 					return createToken(TOK_OP_LESS, currentValue, tokenPosition);
 				case '>':

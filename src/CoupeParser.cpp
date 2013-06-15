@@ -75,8 +75,11 @@ namespace Coupe
 					case TOK_KW_DEF:
 						handleDefinition();
 						break;
+					case TOK_SEMICOLON:
+						getNextToken();
+						break;
 					default:
-						handleMainCode();									
+						handleMainCode();															
 						break;
 				}
 			} while (token -> type != TOK_EOF);			
@@ -241,9 +244,9 @@ namespace Coupe
 		switch(token -> type)
 		{
 			case TOK_INTEGER:
-				return new NumberAST(lexical_cast<int>(token -> value.data));
+				result = new NumberAST(lexical_cast<int>(token -> value.data));
 			case TOK_DOUBLE:
-				return new NumberAST(lexical_cast<double>(token -> value.data));
+				result = new NumberAST(lexical_cast<double>(token -> value.data));
 		}
 		getNextToken(); // eat number
 		return result;
@@ -288,6 +291,34 @@ namespace Coupe
 		}		
 	}
 
+	void Parser::handleMainCode()
+	{
+		FunctionAST* anonymousFunction = parseTopLevelExpression();
+
+		if(anonymousFunction)
+		{
+			llvm::Function* LF = anonymousFunction -> Codegen();
+			if(LF)
+			{
+				beVerboseAboutExpression(anonymousFunction -> getBody());
+				LF -> dump();
+			}			
+		}
+	}
+
+	FunctionAST* Parser::parseTopLevelExpression()
+	{
+		ExpressionAST* instructions = parseExpression();
+		
+		if(instructions)
+		{
+			PrototypeAST* anonymousPrototype = 
+				new PrototypeAST("", std::vector<std::string>());
+			return new FunctionAST(anonymousPrototype, instructions);
+		}
+		return nullptr;
+	}
+
 	bool Parser::isBinaryOp(Type type)
 	{
 		switch(type)
@@ -306,13 +337,7 @@ namespace Coupe
 				return false;
 		}		
 	}
-
-	void Parser::handleMainCode()
-	{
-		// TODO:
-		*outputStream << "handleMainCode" << std::endl;
-	}
-
+	
 	// error functions
 	ExpressionAST* Parser::error(std::string msg, Position position /* = Position(0, 0) */)
 	{

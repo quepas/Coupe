@@ -12,7 +12,7 @@ int main()
 
 	Coupe::Parser parser;
 	parser.beVerbose(true);
-	parser.setInputFile(fileName);
+	//parser.setInputFile(fileName);
 	parser.parse();
 
 	getchar();
