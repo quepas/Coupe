@@ -96,6 +96,36 @@ namespace Coupe
 					return errorV("invalid binary operator");
 			}
 		}
+		else if(L->getType()->getTypeID() != R->getType()->getTypeID()){
+            if(L->getType()->isIntegerTy()) {
+				L = builder.CreateSIToFP(L, R->getType());
+            } else {
+                R = builder.CreateSIToFP(R, L->getType());
+            }
+			switch(op)
+			{
+				case TOK_OP_IMPLICATION:
+					return errorV("binary operator is not supported yet");
+				case TOK_OP_MUL:
+					return builder.CreateFMul(L, R, "d_multmp");
+				case TOK_OP_DIV:
+					return builder.CreateFDiv(L, R, "d_divtmp");
+				case TOK_OP_MOD:
+					return errorV("binary operator is not supported yet");
+				case TOK_OP_ADD:
+					return builder.CreateFAdd(L, R, "d_addtmp");
+				case TOK_OP_SUB:
+					return builder.CreateFSub(L, R, "d_subtmp");
+				case TOK_OP_POWER:
+					return errorV("binary operator is not supported yet");
+				case TOK_OP_LESS:
+					return errorV("binary operator is not supported yet");
+				case TOK_OP_MORE:
+					return errorV("binary operator is not supported yet");
+				default:
+					return errorV("invalid binary operator");
+			}
+		}
 		return nullptr;
 	}
 
