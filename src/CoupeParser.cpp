@@ -328,7 +328,7 @@ namespace Coupe
 			llvm::Function* LF = anonymousFunction -> Codegen();
 			if(LF)
 			{
-					void *FPtr = TheExecutionEngine->getPointerToFunction(LF);
+					void *FPtr = codeGen.getInstance().getExecutionEngine() ->getPointerToFunction(LF);
 					llvm::Type* typ = LF->getReturnType();
 
 				 if (typ->isDoubleTy()){

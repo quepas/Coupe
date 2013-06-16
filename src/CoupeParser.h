@@ -20,20 +20,18 @@ namespace Coupe
 					   token(nullptr),
 					   verbose(false),
 					   inputStream(&std::cin),
-					   outputStream(&std::cout) 
+					   outputStream(&std::cout)
 			{ initBinaryOpPrec(); }
 
 			void setInputFile(std::string filename);
 			void setInputStream(std::istream& stream);
 			void setOutputStream(std::ostream& stream);
 			void beVerbose(bool verbose);
-			void parse();
-
-						CodeGen& codeGen;
-			llvm::ExecutionEngine *TheExecutionEngine;
+			void parse();									
 			
 		private:
 			Scanner* scanner;	
+			CodeGen& codeGen;
 
 			Token* token;
 			bool verbose;

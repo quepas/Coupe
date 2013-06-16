@@ -8,7 +8,8 @@
 #include <llvm/IRBuilder.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/Constants.h>
-#include "llvm/PassManager.h"
+#include <llvm/PassManager.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
 
 #include <iostream>
 #include <vector>
@@ -20,13 +21,11 @@ namespace Coupe
 	class ExpressionAST;
 	class PrototypeAST;
 
-	// instnace of CodeGen for one named TheModule
 	class CodeGen
 	{
 		public:		
 			void setOutputStream(std::ostream& stream);
-
-			// TODO: what about int?
+			
 			llvm::Value* generateNumber(NumberValue number);
 			llvm::Value* generateString(std::string value);
 			llvm::Value* generateVariable(std::string name);
@@ -40,26 +39,24 @@ namespace Coupe
 			llvm::Function* errorF(std::string msg);
 
 			void beVerbose(bool verbose);
-
-			llvm::FunctionPassManager *TheFPM;
-			llvm::Module* mainModule;
-
+			llvm::ExecutionEngine* getExecutionEngine() { return executionEngine; }
+			
 			static CodeGen& getInstance()
 			{
 				static CodeGen instance;
 				return instance;
 			}
 		private:
-			CodeGen() : outputStream(&std::cout),
-						mainModule(new llvm::Module("CoupeModule", llvm::getGlobalContext())),
-						builder(llvm::getGlobalContext()),
-						verbose(false) {}
+			CodeGen();
 			CodeGen(const CodeGen&) : builder(llvm::getGlobalContext()) {}
 			CodeGen& operator=(const CodeGen&) {}
-			
+
+			llvm::ExecutionEngine *executionEngine;
+			llvm::FunctionPassManager *functionPassMgr;
+			llvm::Module* mainModule;
+
 			std::ostream* outputStream;
 			bool verbose;
-
 		
 			llvm::IRBuilder<> builder;
 			std::map<std::string, llvm::Value*> namedValues;

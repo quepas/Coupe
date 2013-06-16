@@ -8,8 +8,37 @@
 #include <llvm/DerivedTypes.h>
 #include <llvm/Analysis/Verifier.h>
 
+
+#include "llvm/Analysis/Passes.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Support/TargetSelect.h"
+
 namespace Coupe
 {
+	CodeGen::CodeGen()  : outputStream(&std::cout),
+						  mainModule(new llvm::Module("CoupeModule", llvm::getGlobalContext())),		
+						  functionPassMgr(new llvm::FunctionPassManager(mainModule)),
+						  builder(llvm::getGlobalContext()),
+						  verbose(false)
+	{
+		llvm::InitializeNativeTarget();		
+
+		std::string ErrStr;
+		executionEngine = llvm::EngineBuilder(mainModule).setErrorStr(&ErrStr).create();
+		if (!executionEngine) {
+			fprintf(stderr, "Could not create ExecutionEngine: %s\n", ErrStr.c_str());
+			exit(1);
+		}
+
+		functionPassMgr -> add(new llvm::DataLayout(*(executionEngine)->getDataLayout()));		
+		functionPassMgr -> add(llvm::createBasicAliasAnalysisPass());		
+		functionPassMgr -> add(llvm::createInstructionCombiningPass());		
+		functionPassMgr -> add(llvm::createReassociatePass());		
+		functionPassMgr -> add(llvm::createGVNPass());
+		functionPassMgr -> add(llvm::createCFGSimplificationPass());
+		functionPassMgr -> doInitialization();		
+	}
+
 	void CodeGen::setOutputStream(std::ostream& stream) 
 	{
 		outputStream = &stream;
@@ -33,10 +62,8 @@ namespace Coupe
 			true, llvm::GlobalValue::PrivateLinkage, strConst, ".glob_str");
 
 		std::vector<llvm::Constant*> indices;
-
 		indices.push_back(llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(llvm::getGlobalContext())));
 		indices.push_back(llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(llvm::getGlobalContext())));
-
 
 		llvm::Constant *strPtr = llvm::ConstantExpr::getGetElementPtr(var, indices);
 		return strPtr;				
@@ -60,8 +87,17 @@ namespace Coupe
 		llvm::Type* typeL = L -> getType();
 		llvm::Type* typeR = R -> getType();
 
-		// TODO: what about expression (1 + 2.0)?
-		// TODO2: fill this up!
+		if(typeL -> getTypeID() != typeR -> getTypeID())
+		{
+			if(typeL -> isIntegerTy()) {
+				L = builder.CreateSIToFP(L, R -> getType());
+				typeL = L -> getType();
+			} else {
+				R = builder.CreateSIToFP(R, L -> getType());
+				typeR = R -> getType();
+			}
+		}
+
 		if(typeL -> isIntegerTy() && typeR -> isIntegerTy())
 		{
 			switch(op)
@@ -113,37 +149,7 @@ namespace Coupe
 				default:
 					return errorV("invalid binary operator");
 			}
-		}
-		else if(L->getType()->getTypeID() != R->getType()->getTypeID()){
-            if(L->getType()->isIntegerTy()) {
-				L = builder.CreateSIToFP(L, R->getType());
-            } else {
-                R = builder.CreateSIToFP(R, L->getType());
-            }
-			switch(op)
-			{
-				case TOK_OP_IMPLICATION:
-					return errorV("binary operator is not supported yet");
-				case TOK_OP_MUL:
-					return builder.CreateFMul(L, R, "d_multmp");
-				case TOK_OP_DIV:
-					return builder.CreateFDiv(L, R, "d_divtmp");
-				case TOK_OP_MOD:
-					return errorV("binary operator is not supported yet");
-				case TOK_OP_ADD:
-					return builder.CreateFAdd(L, R, "d_addtmp");
-				case TOK_OP_SUB:
-					return builder.CreateFSub(L, R, "d_subtmp");
-				case TOK_OP_POWER:
-					return errorV("binary operator is not supported yet");
-				case TOK_OP_LESS:
-					return errorV("binary operator is not supported yet");
-				case TOK_OP_MORE:
-					return errorV("binary operator is not supported yet");
-				default:
-					return errorV("invalid binary operator");
-			}
-		}
+		}		
 		return nullptr;
 	}
 
@@ -210,9 +216,8 @@ namespace Coupe
 		if(returnValue)
 		{
 			builder.CreateRet(returnValue);
-			llvm::verifyFunction(*function);
-			// Optimize the function.
-			TheFPM->run(*function);
+			llvm::verifyFunction(*function);				
+			functionPassMgr -> run(*function);			
 			return function;
 		}
 		function -> eraseFromParent();
