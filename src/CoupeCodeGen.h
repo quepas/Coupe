@@ -8,6 +8,7 @@
 #include <llvm/IRBuilder.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/Constants.h>
+#include "llvm/PassManager.h"
 
 #include <iostream>
 #include <vector>
@@ -27,6 +28,7 @@ namespace Coupe
 
 			// TODO: what about int?
 			llvm::Value* generateNumber(NumberValue number);
+			llvm::Value* generateString(std::string value);
 			llvm::Value* generateVariable(std::string name);
 			llvm::Value* generateBinaryOp(Type op, ExpressionAST* LHS, ExpressionAST* RHS);
 			llvm::Value* generateCall(std::string callee, const std::vector<ExpressionAST*>& args);
@@ -38,6 +40,9 @@ namespace Coupe
 			llvm::Function* errorF(std::string msg);
 
 			void beVerbose(bool verbose);
+
+			llvm::FunctionPassManager *TheFPM;
+			llvm::Module* mainModule;
 
 			static CodeGen& getInstance()
 			{
@@ -55,9 +60,9 @@ namespace Coupe
 			std::ostream* outputStream;
 			bool verbose;
 
-			llvm::Module* mainModule;
+		
 			llvm::IRBuilder<> builder;
-			std::map<std::string, llvm::Value*> namedValues;			
+			std::map<std::string, llvm::Value*> namedValues;
 
 			void beVerboseAbout(std::string msg);
 	};

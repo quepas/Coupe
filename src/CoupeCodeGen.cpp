@@ -23,6 +23,24 @@ namespace Coupe
 		else // NumberValue::DOUBLE
 			return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(number.value.d));				
 	}
+	
+	llvm::Value* CodeGen::generateString(std::string value)
+	{
+		beVerboseAbout("CodeGen::generateString()");
+		llvm::Constant *strConst = llvm::ConstantDataArray::getString(llvm::getGlobalContext(), value.c_str());
+		llvm::GlobalVariable *var = new llvm::GlobalVariable(
+			*mainModule, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), value.length()+1),
+			true, llvm::GlobalValue::PrivateLinkage, strConst, ".glob_str");
+
+		std::vector<llvm::Constant*> indices;
+
+		indices.push_back(llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(llvm::getGlobalContext())));
+		indices.push_back(llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(llvm::getGlobalContext())));
+
+
+		llvm::Constant *strPtr = llvm::ConstantExpr::getGetElementPtr(var, indices);
+		return strPtr;				
+	}
 
 	llvm::Value* CodeGen::generateVariable(std::string name)
 	{		
@@ -193,6 +211,8 @@ namespace Coupe
 		{
 			builder.CreateRet(returnValue);
 			llvm::verifyFunction(*function);
+			// Optimize the function.
+			TheFPM->run(*function);
 			return function;
 		}
 		function -> eraseFromParent();

@@ -141,6 +141,18 @@ namespace Coupe
 					return createToken(TOK_OP_LESS, currentValue, tokenPosition);
 				case '>':
 					return createToken(TOK_OP_MORE, currentValue, tokenPosition);
+				case '\"':
+					currentValue.pop_back();
+					currentChar = getCharacter();
+					while (currentChar != '\"'){
+						currentValue.push_back(currentChar);
+						if (currentChar == EOF){
+							ungetCharacter();
+							return createToken(TOK_ERROR, currentValue + " - missing \"", tokenPosition);
+						}
+						currentChar = getCharacter();
+					}
+					return createToken(TOK_STRING, currentValue, tokenPosition);
 				case '#':
 					currentChar = getCharacter();
 					currentValue.push_back(currentChar);															

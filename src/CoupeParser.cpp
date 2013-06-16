@@ -1,4 +1,5 @@
 #include "CoupeParser.h"
+#include "CoupeCodeGen.h"
 
 #include "CoupeUtils.h"
 #include <iostream>
@@ -214,6 +215,8 @@ namespace Coupe
 				return parseNumber();
 			case TOK_ROUND_LEFT_BRACKET:
 				return parseParenthesis();
+			case TOK_STRING:
+				return parseString();
 			default:
 				return error("Unknown token when expecting expression", token -> position);
 		}
@@ -269,6 +272,14 @@ namespace Coupe
 		return result;
 	}
 
+	ExpressionAST* Parser::parseString()
+	{
+		ExpressionAST* result = nullptr;
+		result = new StringAST(token->value.data);
+		getNextToken(); // eat number
+		return result;
+	}
+
 	ExpressionAST* Parser::parseParenthesis()
 	{
 		getNextToken(); // eat '('
@@ -317,6 +328,21 @@ namespace Coupe
 			llvm::Function* LF = anonymousFunction -> Codegen();
 			if(LF)
 			{
+					void *FPtr = TheExecutionEngine->getPointerToFunction(LF);
+					llvm::Type* typ = LF->getReturnType();
+
+				 if (typ->isDoubleTy()){
+					  double (*FP)() = (double (*)())(intptr_t)FPtr;
+					  fprintf(stderr, "Evaluated to %f\n", FP());
+				  }
+				  else if (typ->isIntegerTy()){
+					  int32_t (*FP)() = (int32_t (*)())(intptr_t)FPtr;
+					  fprintf(stderr, "Evaluated to %d\n", FP());
+				  }
+				  else if (typ->isPointerTy()){
+					  char* (*FP)() = (char* (*)())(intptr_t)FPtr;
+					  fprintf(stderr, "Evaluated to %s\n", FP());
+				  }
 				beVerboseAboutExpression(anonymousFunction -> getBody());
 				LF -> dump();
 			}			

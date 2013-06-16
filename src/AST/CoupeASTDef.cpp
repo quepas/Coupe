@@ -16,12 +16,13 @@ namespace Coupe
 		number.value.d = value;
 		number.type = NumberValue::DOUBLE;
 	}
-
 	llvm::Value* NumberAST::Codegen()
 	{		
 		return CodeGen::getInstance().generateNumber(number);
 	}
-
+	llvm::Value* StringAST::Codegen(){
+		return CodeGen::getInstance().generateString(text);
+	}
 	llvm::Value* VariableAST::Codegen()
 	{
 		return CodeGen::getInstance().generateVariable(name);

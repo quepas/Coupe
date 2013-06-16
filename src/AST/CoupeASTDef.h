@@ -48,6 +48,16 @@ namespace Coupe
 			NumberValue number;				
 	};
 
+	class StringAST : public ExpressionAST
+	{
+		public:
+			StringAST(std::string value) : text(value) {};
+			virtual llvm::Value* Codegen();
+
+		private:
+			std::string text;
+	};
+
 	class VariableAST : public ExpressionAST
 	{
 		public:

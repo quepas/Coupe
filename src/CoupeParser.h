@@ -7,6 +7,8 @@
 #include "CoupeCodeGen.h"
 
 #include "AST/CoupeASTDef.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/JIT.h"
 
 namespace Coupe
 {
@@ -26,10 +28,13 @@ namespace Coupe
 			void setOutputStream(std::ostream& stream);
 			void beVerbose(bool verbose);
 			void parse();
+
+						CodeGen& codeGen;
+			llvm::ExecutionEngine *TheExecutionEngine;
 			
 		private:
 			Scanner* scanner;	
-			CodeGen& codeGen;
+
 			Token* token;
 			bool verbose;
 			std::istream* inputStream;
@@ -46,6 +51,7 @@ namespace Coupe
 
 			// parsing sub-product		
 			ExpressionAST* parseNumber();
+			ExpressionAST* parseString();
 			ExpressionAST* parseIdentifier();
 			ExpressionAST* parseParenthesis();
 			ExpressionAST* parsePrimary();
