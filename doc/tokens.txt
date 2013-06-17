@@ -31,3 +31,5 @@ Coupe tokens list:
 29. TOK_OP_LESS - "<"
 30. TOK_OP_MORE - ">"
 31. TOK_SEMICOLON - ";"
+32. TOK_COLON - ":"
+33. TOK_KW_PATTERN - "pattern"

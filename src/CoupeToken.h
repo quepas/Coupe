@@ -73,7 +73,9 @@ namespace Coupe
 		TOK_COMMENT_SECTION,
 
 		TOK_COMMA,
-		TOK_SEMICOLON
+		TOK_SEMICOLON,
+		TOK_COLON,
+		TOK_KW_PATTERN
 	};	
 
 	struct Token

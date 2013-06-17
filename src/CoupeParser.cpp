@@ -227,6 +227,8 @@ namespace Coupe
 				return parseParenthesis();
 			case TOK_STRING:
 				return parseString();
+			case TOK_KW_PATTERN:
+				return parsePattern();
 			default:
 				return error("Unknown token when expecting expression", token -> position);
 		}
@@ -327,6 +329,26 @@ namespace Coupe
 
 			LHS = new BinaryOpAST(binaryOpType, LHS, RHS);			
 		}		
+	}
+
+	ExpressionAST* Parser::parsePattern()
+	{
+		getNextToken(); // eat 'pattern'
+
+		std::string identifierName = token -> value.data;
+		if(token -> type != TOK_IDENTIFIER)
+		{
+			return error("expected identifier");
+		}
+		ExpressionAST* identifier = parseIdentifier();
+		
+		//getNextToken();
+		if(token -> type != TOK_COLON)
+		{
+			return error("expected colon ':'", token -> position);
+		}		
+
+		return new VariableAST(identifierName);
 	}
 
 	void Parser::handleMainCode()

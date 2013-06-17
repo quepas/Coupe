@@ -97,6 +97,8 @@ namespace Coupe
 				: callee(_callee), args(_args) {}
 			virtual llvm::Value* Codegen();
 
+			std::string getCallee() { return callee; }
+			std::vector<ExpressionAST*>& getArgs() { return args; }
 		private:
 			std::string callee;
 			std::vector<ExpressionAST*> args;

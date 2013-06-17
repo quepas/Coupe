@@ -13,7 +13,7 @@ prototype := TOK_IDENTIFIER
 				TOK_ROUND_RIGHT_BRACKET[')'] 
 expression := primary binoprhs*
 
-primary := identifierExpr | numberExpr | parenthesisExpr
+primary := identifierExpr | numberExpr | parenthesisExpr | patternExpr
 identifierExpr := TOK_IDENTIFIER | 
 				  TOK_IDENTIFIER 
 					  TOK_ROUND_LEFT_BRACKET['(']
@@ -24,7 +24,7 @@ numberExpr := TOK_INTEGER | TOK_DOUBLE
 parenthesisExpr := TOK_ROUND_LEFT_BRACKET['(']
 					   expression*
 				   TOK_ROUND_RIGHT_BRACKET[')'] 					  
-					  
+patternExpr := identifierExpr TOK_COLON identifierExpr (TOK_OP_IMPLICATION identifierExpr)*					  
 binoprhs := (TOK_OP_IMPLICATION |
 			 TOK_OP_MUL |
 			 TOK_OP_DIV |

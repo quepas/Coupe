@@ -73,6 +73,7 @@ namespace Coupe
 			if(comparedValue == "and")		return createToken(TOK_KW_AND, currentValue, tokenPosition);
 			if(comparedValue == "or")		return createToken(TOK_KW_OR, currentValue, tokenPosition);
 			if(comparedValue == "import")	return createToken(TOK_KW_IMPORT, currentValue, tokenPosition);
+			if(comparedValue == "pattern")	return createToken(TOK_KW_PATTERN, currentValue, tokenPosition);
 
 			return createToken(TOK_IDENTIFIER, currentValue, tokenPosition);
 		} 
@@ -137,6 +138,8 @@ namespace Coupe
 					return createToken(TOK_COMMA, currentValue, tokenPosition);
 				case ';':
 					return createToken(TOK_SEMICOLON, currentValue, tokenPosition);
+				case ':':
+					return createToken(TOK_COLON, currentValue, tokenPosition);
 				case '<':
 					return createToken(TOK_OP_LESS, currentValue, tokenPosition);
 				case '>':

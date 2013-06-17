@@ -31,6 +31,7 @@ namespace Coupe
 			static bool isCharacter(char character);
 			static std::string toUpperCase(std::string text);
 			static std::string toLowerCase(std::string text);
+			static char* createCString(std::string text);
 
 			// temporary
 			static std::string createTokenInfo(Token* token);

@@ -57,6 +57,7 @@ namespace Coupe
 			ExpressionAST* parsePrimary();
 			ExpressionAST* parseExpression();
 			ExpressionAST* parseBinOpRHS(int expressionPrec, ExpressionAST* LHS);
+			ExpressionAST* parsePattern();
 			PrototypeAST* parsePrototype();
 			PrototypeAST* parseExtern();
 			FunctionAST* parseDefinition();

@@ -5,17 +5,15 @@
 #include "CoupeParser.h"
 #include "CoupeToken.h"
 
-#include "STD/std.h"
-
 int main()
 {
 	std::string fileName = "test_files/coupe1.txt";
 	std::string fileNameFib = "test_files/coupe_fib.txt";
 
 	Coupe::Parser parser;
-	parser.beVerbose(true);
+	parser.beVerbose(true);	
 	//parser.setInputFile(fileName);	    
-	parser.parse();
+	parser.parse();	
 
 	getchar();
 }

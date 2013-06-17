@@ -71,6 +71,13 @@ namespace Coupe
 		return newText;
 	}
 
+	char* Utils::createCString(std::string text)
+	{
+		char* cText = new char[text.length()+1];
+		strcpy(cText, text.c_str());
+		return cText;
+	}
+
 	// temporary
 	std::string Utils::createTokenInfo(Token* token) 
 	{
@@ -120,6 +127,8 @@ namespace Coupe
 			CASE_TYPE(TOK_COMMENT_SECTION)
 			CASE_TYPE(TOK_COMMA)
 			CASE_TYPE(TOK_SEMICOLON)
+			CASE_TYPE(TOK_COLON)
+			CASE_TYPE(TOK_KW_PATTERN)
 			default:
 				return TOKEN_TYPE_TO_STRING(TOK_ERROR);
 		}

@@ -11,7 +11,7 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Support/TargetSelect.h>
 
-#include "STD/std.h"
+#include "library/CoupeStd.h"
 
 namespace Coupe
 {
@@ -50,15 +50,29 @@ namespace Coupe
 		std::vector<llvm::Type*> toLowerParams;  
 		toLowerParams.push_back(stringType);  
 		llvm::FunctionType* toLowerType = llvm::FunctionType::get(stringType, toLowerParams, false);  
-		llvm::Function* toLowerPTR = llvm::Function::Create(toLowerType, llvm::Function::ExternalLinkage, "toLower", mainModule);  
-		executionEngine -> addGlobalMapping(toLowerPTR, &::toLower);  
+		llvm::Function* toLowerPTR = llvm::Function::Create(toLowerType, llvm::Function::ExternalLinkage, "lower", mainModule);  
+		executionEngine -> addGlobalMapping(toLowerPTR, &Coupe::lower);  
 
 		// toStringFromFile
 		std::vector<llvm::Type*> toStrFromFileParams;  
 		toStrFromFileParams.push_back(stringType);  
 		llvm::FunctionType* toStrFromFileType = llvm::FunctionType::get(stringType, toStrFromFileParams, false);  
 		llvm::Function* toStrFromFilePTR = llvm::Function::Create(toStrFromFileType, llvm::Function::ExternalLinkage, "toStringFromFile", mainModule);  
-		executionEngine -> addGlobalMapping(toStrFromFilePTR, &::toStringFromFile);  
+		executionEngine -> addGlobalMapping(toStrFromFilePTR, &Coupe::toStringFromFile);  
+
+		// identity
+		std::vector<llvm::Type*> identityParams;  
+		identityParams.push_back(doubleType);  
+		llvm::FunctionType* identityFunctionType = llvm::FunctionType::get(doubleType, identityParams, false);  
+		llvm::Function* identityFPTR = llvm::Function::Create(identityFunctionType, llvm::Function::ExternalLinkage, "identity", mainModule);  
+		executionEngine -> addGlobalMapping(identityFPTR, &Coupe::identity);  
+
+		// doubleIt
+		std::vector<llvm::Type*> doubleItParams;  
+		doubleItParams.push_back(doubleType);  
+		llvm::FunctionType* doubleItFunctionType = llvm::FunctionType::get(doubleType, doubleItParams, false);  
+		llvm::Function* doubleItFPTR = llvm::Function::Create(doubleItFunctionType, llvm::Function::ExternalLinkage, "doubleIt", mainModule);  
+		executionEngine -> addGlobalMapping(doubleItFPTR, &Coupe::doubleIt);  
 	}
 
 	void CodeGen::setOutputStream(std::ostream& stream) 
@@ -151,7 +165,16 @@ namespace Coupe
 			switch(op)
 			{
 				case TOK_OP_IMPLICATION:
-					return errorV("binary operator is not supported yet");
+					{					
+						CallAST* callExpression = dynamic_cast<CallAST*>(RHS);
+						if(callExpression != nullptr)
+						{
+							std::vector<ExpressionAST*> args;
+							args.push_back(LHS);
+							return generateCall(callExpression -> getCallee(), args);							
+						}
+					}
+					return errorV("binary operator is not supported yet");				
 				case TOK_OP_MUL:
 					return builder.CreateFMul(L, R, "d_multmp");
 				case TOK_OP_DIV:
