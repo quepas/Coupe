@@ -54,6 +54,16 @@ namespace Coupe
 		CodeGen::getInstance().beVerbose(_verbose);
 	}
 
+	void Parser::beVerboseAboutScanner(bool verbose)
+	{
+		scanner -> beVerbose(verbose);
+	}
+
+	void Parser::beVerboseAboutCodeGen(bool verbose)
+	{
+		codeGen.beVerbose(verbose);
+	}
+
 	Token* Parser::getNextToken()
 	{
 		return token = scanner -> getNext();
@@ -327,22 +337,8 @@ namespace Coupe
 		{
 			llvm::Function* LF = anonymousFunction -> Codegen();
 			if(LF)
-			{
-					void *FPtr = codeGen.getInstance().getExecutionEngine() ->getPointerToFunction(LF);
-					llvm::Type* typ = LF->getReturnType();
-
-				 if (typ->isDoubleTy()){
-					  double (*FP)() = (double (*)())(intptr_t)FPtr;
-					  fprintf(stderr, "Evaluated to %f\n", FP());
-				  }
-				  else if (typ->isIntegerTy()){
-					  int32_t (*FP)() = (int32_t (*)())(intptr_t)FPtr;
-					  fprintf(stderr, "Evaluated to %d\n", FP());
-				  }
-				  else if (typ->isPointerTy()){
-					  char* (*FP)() = (char* (*)())(intptr_t)FPtr;
-					  fprintf(stderr, "Evaluated to %s\n", FP());
-				  }
+			{				
+				beVerboseAboutEvaluation(LF);
 				beVerboseAboutExpression(anonymousFunction -> getBody());
 				LF -> dump();
 			}			
@@ -462,4 +458,25 @@ namespace Coupe
 			*outputStream << "being verbose about expression" << std::endl;			
 		}
 	}
+
+	void Parser::beVerboseAboutEvaluation(llvm::Function* function)
+	{
+		if(verbose)
+		{
+			void *FPtr = codeGen.getExecutionEngine() -> getPointerToFunction(function);
+			llvm::Type* functionType = function -> getReturnType();
+
+			if (functionType -> isDoubleTy()){				
+				*outputStream << "Evaluated: " << ((double(*)())(intptr_t)FPtr)() << std::endl;												
+			}
+			else if (functionType -> isIntegerTy()){
+				*outputStream << "Evaluated: " <<  ((int32_t(*)())(intptr_t)FPtr)() << std::endl;				
+			}
+			else if (functionType -> isPointerTy()){
+				*outputStream << "Evaluated: " <<  ((char*(*)())(intptr_t)FPtr)() << std::endl;												
+			}
+		}
+	}
+
+
 }

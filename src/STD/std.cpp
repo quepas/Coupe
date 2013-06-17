@@ -5,13 +5,10 @@ char* toStringFromFile(char* filename){
 	std::string content, line;
 
 	while(std::getline(file, line))
-	{	
-		content.append(line);
-	}
+		content.append(line);	
 
-	char* str = (char*)malloc(sizeof(content.size()*sizeof(char)));
+	char* str = new char[content.length()+1];
 	strcpy(str, content.c_str());
-
 	return str;
 }
 

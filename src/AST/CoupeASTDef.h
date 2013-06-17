@@ -39,8 +39,7 @@ namespace Coupe
 	class NumberAST : public ExpressionAST
 	{
 		public:
-			NumberAST(int value);
-			NumberAST(float value);
+			NumberAST(int value);	
 			NumberAST(double value);		
 			virtual llvm::Value* Codegen();
 
@@ -51,7 +50,7 @@ namespace Coupe
 	class StringAST : public ExpressionAST
 	{
 		public:
-			StringAST(std::string value) : text(value) {};
+			StringAST(std::string _text) : text(_text) {};
 			virtual llvm::Value* Codegen();
 
 		private:

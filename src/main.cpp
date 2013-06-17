@@ -5,6 +5,8 @@
 #include "CoupeParser.h"
 #include "CoupeToken.h"
 
+#include "STD/std.h"
+
 int main()
 {
 	std::string fileName = "test_files/coupe1.txt";

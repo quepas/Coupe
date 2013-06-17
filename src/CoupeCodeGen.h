@@ -62,6 +62,7 @@ namespace Coupe
 			std::map<std::string, llvm::Value*> namedValues;
 
 			void beVerboseAbout(std::string msg);
+			void initStandardLibrary();
 	};
 }
 

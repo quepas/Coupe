@@ -27,6 +27,8 @@ namespace Coupe
 			void setInputStream(std::istream& stream);
 			void setOutputStream(std::ostream& stream);
 			void beVerbose(bool verbose);
+			void beVerboseAboutScanner(bool verbose);
+			void beVerboseAboutCodeGen(bool verbose);
 			void parse();									
 			
 		private:
@@ -78,6 +80,7 @@ namespace Coupe
 			void beVerboseAboutPrototype(PrototypeAST* prototype, bool isExternal = false);
 			void beVerboseAboutFunction(FunctionAST* function);
 			void beVerboseAboutImport(ImportAST* import);
+			void beVerboseAboutEvaluation(llvm::Function* function);			
 	};
 }
 

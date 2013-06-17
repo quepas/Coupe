@@ -7,11 +7,11 @@
 #include <llvm/Function.h>
 #include <llvm/DerivedTypes.h>
 #include <llvm/Analysis/Verifier.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Support/TargetSelect.h>
 
-
-#include "llvm/Analysis/Passes.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Support/TargetSelect.h"
+#include "STD/std.h"
 
 namespace Coupe
 {
@@ -23,10 +23,10 @@ namespace Coupe
 	{
 		llvm::InitializeNativeTarget();		
 
-		std::string ErrStr;
-		executionEngine = llvm::EngineBuilder(mainModule).setErrorStr(&ErrStr).create();
+		std::string errorMsg;
+		executionEngine = llvm::EngineBuilder(mainModule).setErrorStr(&errorMsg).create();
 		if (!executionEngine) {
-			fprintf(stderr, "Could not create ExecutionEngine: %s\n", ErrStr.c_str());
+			*outputStream << "Could not create ExecutionEngine: " << errorMsg.c_str() << std::endl;
 			exit(1);
 		}
 
@@ -37,6 +37,28 @@ namespace Coupe
 		functionPassMgr -> add(llvm::createGVNPass());
 		functionPassMgr -> add(llvm::createCFGSimplificationPass());
 		functionPassMgr -> doInitialization();		
+		initStandardLibrary();
+	}
+
+	void CodeGen::initStandardLibrary()
+	{
+		llvm::Type* integerType = llvm::IntegerType::getInt32Ty(llvm::getGlobalContext());
+		llvm::Type* doubleType = llvm::Type::getPrimitiveType(llvm::getGlobalContext(), llvm::Type::DoubleTyID);
+		llvm::Type* stringType = llvm::IntegerType::getInt8PtrTy(llvm::getGlobalContext());
+		
+		// toLowerCase
+		std::vector<llvm::Type*> toLowerParams;  
+		toLowerParams.push_back(stringType);  
+		llvm::FunctionType* toLowerType = llvm::FunctionType::get(stringType, toLowerParams, false);  
+		llvm::Function* toLowerPTR = llvm::Function::Create(toLowerType, llvm::Function::ExternalLinkage, "toLower", mainModule);  
+		executionEngine -> addGlobalMapping(toLowerPTR, &::toLower);  
+
+		// toStringFromFile
+		std::vector<llvm::Type*> toStrFromFileParams;  
+		toStrFromFileParams.push_back(stringType);  
+		llvm::FunctionType* toStrFromFileType = llvm::FunctionType::get(stringType, toStrFromFileParams, false);  
+		llvm::Function* toStrFromFilePTR = llvm::Function::Create(toStrFromFileType, llvm::Function::ExternalLinkage, "toStringFromFile", mainModule);  
+		executionEngine -> addGlobalMapping(toStrFromFilePTR, &::toStringFromFile);  
 	}
 
 	void CodeGen::setOutputStream(std::ostream& stream) 
@@ -53,20 +75,19 @@ namespace Coupe
 			return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(number.value.d));				
 	}
 	
-	llvm::Value* CodeGen::generateString(std::string value)
+	llvm::Value* CodeGen::generateString(std::string text)
 	{
 		beVerboseAbout("CodeGen::generateString()");
-		llvm::Constant *strConst = llvm::ConstantDataArray::getString(llvm::getGlobalContext(), value.c_str());
-		llvm::GlobalVariable *var = new llvm::GlobalVariable(
-			*mainModule, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), value.length()+1),
+		llvm::Constant* strConst = llvm::ConstantDataArray::getString(llvm::getGlobalContext(), text.c_str());
+		llvm::GlobalVariable* var = new llvm::GlobalVariable(
+			*mainModule, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), text.length()+1),
 			true, llvm::GlobalValue::PrivateLinkage, strConst, ".glob_str");
 
 		std::vector<llvm::Constant*> indices;
 		indices.push_back(llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(llvm::getGlobalContext())));
 		indices.push_back(llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(llvm::getGlobalContext())));
 
-		llvm::Constant *strPtr = llvm::ConstantExpr::getGetElementPtr(var, indices);
-		return strPtr;				
+		return llvm::ConstantExpr::getGetElementPtr(var, indices);		
 	}
 
 	llvm::Value* CodeGen::generateVariable(std::string name)
@@ -89,6 +110,7 @@ namespace Coupe
 
 		if(typeL -> getTypeID() != typeR -> getTypeID())
 		{
+			// upcast: integer -> double
 			if(typeL -> isIntegerTy()) {
 				L = builder.CreateSIToFP(L, R -> getType());
 				typeL = L -> getType();
@@ -178,7 +200,7 @@ namespace Coupe
 		std::vector<llvm::Type*> doubles(args.size(), llvm::Type::getDoubleTy(llvm::getGlobalContext()));
 		llvm::FunctionType* functionType;
 		
-		functionType = (!returnType ? llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()), doubles, false)
+		functionType = (!returnType ? llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm::getGlobalContext()), doubles, false)
 								    : llvm::FunctionType::get(returnType, doubles, false));
 		llvm::Function* function = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, name,	mainModule);
 
@@ -249,6 +271,8 @@ namespace Coupe
 	void CodeGen::beVerboseAbout(std::string msg)
 	{
 		if(verbose)
-			*outputStream << msg << std::endl;
+		{
+			//*outputStream << msg << std::endl;
+		}
 	}
 }
