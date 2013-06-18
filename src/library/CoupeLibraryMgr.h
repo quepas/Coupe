@@ -77,6 +77,7 @@ namespace Coupe
 			void ungetCharacter();	
 			Value::Type convertTokenType(MLToken* token);
 			llvm::Type* convertValueType(Value::Type type);
+			bool isDataType(MLToken* token);
 	};
 }
 

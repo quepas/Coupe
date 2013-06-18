@@ -42,19 +42,8 @@ namespace Coupe
 	}
 
 	void CodeGen::initStandardLibrary()
-	{
-		llvm::Type* integerType = llvm::IntegerType::getInt32Ty(llvm::getGlobalContext());
-		llvm::Type* doubleType = llvm::Type::getPrimitiveType(llvm::getGlobalContext(), llvm::Type::DoubleTyID);
-		llvm::Type* stringType = llvm::IntegerType::getInt8PtrTy(llvm::getGlobalContext());
-		
-		// toLowerCase
-		std::vector<llvm::Type*> toLowerParams;  
-		toLowerParams.push_back(stringType);  
-		llvm::FunctionType* toLowerType = llvm::FunctionType::get(stringType, toLowerParams, false);  
-		llvm::Function* toLowerPTR = llvm::Function::Create(toLowerType, llvm::Function::ExternalLinkage, "lower", mainModule);  
-		executionEngine -> addGlobalMapping(toLowerPTR, &Coupe::lower);  		
-
-		libraryMgr.beVerbose(true);
+	{		
+		libraryMgr.beVerbose(verbose);
 		libraryMgr.setInputFile("src/library/default.metalib");
 		libraryMgr.parseAndExecute(executionEngine, mainModule);
 	}

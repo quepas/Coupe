@@ -67,6 +67,7 @@ namespace Coupe
 			character = getCharacter();				
 		} while (Utils::isWhitespace(character));
 		value.push_back(character);
+
 		if(Utils::isCharacter(character))
 		{
 			do 
@@ -113,25 +114,24 @@ namespace Coupe
 					return new MLToken(MLT_EOF, value);
 			}
 		}
-
 		return new MLToken(MLT_ERROR, value);
 	}	
 
 	void LibraryMgr::parseAndExecute(llvm::ExecutionEngine* executionEngine, llvm::Module* module)
 	{
-		std::vector<MLData*> mlData = parse();
-		std::map<std::string, void*> function_map = getLibraryFunctionPtr();				
+		std::vector<MLData*>& mlDatas = parse();
+		std::map<std::string, void*>& function_map = getLibraryFunctionPtr();				
 	
-		for(unsigned int i = 0; i < mlData.size(); ++i)
+		for(unsigned int i = 0; i < mlDatas.size(); ++i)
 		{			
-			MLData* data = mlData[i];			
+			MLData* data = mlDatas[i];			
 			std::vector<llvm::Type*> params;
 			for(unsigned int j = 0; j < data -> argsType.size(); ++j)
 			{
 				Value::Type type = data -> argsType[j];
 				params.push_back(convertValueType(type));
 			}			
-			llvm::FunctionType* functionType = llvm::FunctionType::get(convertValueType(data->returnType), params, false);
+			llvm::FunctionType* functionType = llvm::FunctionType::get(convertValueType(data -> returnType), params, false);
 			llvm::Function* functionPTR = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, data -> name, module);
 			executionEngine -> addGlobalMapping(functionPTR, function_map.at(data -> name));			
 		}
@@ -144,9 +144,7 @@ namespace Coupe
 
 		while(token -> type != MLT_EOF)
 		{
-			if(token -> type == MLT_INTEGER ||
-				token -> type == MLT_DOUBLE ||
-				token -> type == MLT_STRING)
+			if(isDataType(token))
 			{
 				Value::Type returnType = convertTokenType(token);
 				MLData* data = parseMLData();
@@ -185,21 +183,18 @@ namespace Coupe
 		{
 			token = getNextToken();
 
-			if(token -> type == MLT_INTEGER ||
-				token -> type == MLT_DOUBLE ||
-				token -> type == MLT_STRING)
+			if(isDataType(token))
 			{
 				result -> argsType.push_back(convertTokenType(token));
 				token = getNextToken();
 
-				if(token -> type == MLT_RIGHT_PARA)
+				switch(token -> type)					
 				{
-					return result;
-				}
-				if(token -> type != MLT_COMMA)
-				{
-					*outputStream << "expected \',\'" << std::endl;
-					return nullptr;
+					case MLT_RIGHT_PARA:
+						return result;				
+					case MLT_COMMA:				
+						*outputStream << "expected \',\'" << std::endl;
+						return nullptr;
 				}
 			}
 			else 
@@ -235,6 +230,19 @@ namespace Coupe
 				return llvm::IntegerType::getInt8PtrTy(llvm::getGlobalContext());
 		}
 		return nullptr;		
+	}
+
+	bool LibraryMgr::isDataType(MLToken* token)
+	{
+		switch(token -> type)
+		{
+			case MLT_INTEGER:
+			case MLT_DOUBLE:
+			case MLT_STRING:
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	char LibraryMgr::getCharacter()

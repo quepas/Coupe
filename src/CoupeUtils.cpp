@@ -35,18 +35,15 @@ namespace Coupe
 	std::string Utils::toUpperCase(std::string text)
 	{
 		std::string newText;
-		std::for_each(text.begin(), text.end(), [&newText](char character){
-			if(isCharacter(character) || isDigit(character))
+		std::for_each(text.begin(), text.end(), [&newText](char character){			
+			if(character >= 'a' && character <= 'z')
 			{
-				if(character >= 'a' && character <= 'z')
-				{
-					newText.push_back((int)character - 32);
-				}
-				else
-				{
-					newText.push_back(character);
-				}
-			} 		
+				newText.push_back((int)character - 32);
+			}
+			else
+			{
+				newText.push_back(character);
+			}					
 		});
 		return newText;
 	}
@@ -55,18 +52,15 @@ namespace Coupe
 	std::string Utils::toLowerCase(std::string text)
 	{
 		std::string newText;
-		std::for_each(text.begin(), text.end(), [&newText](char character){
-			if(isCharacter(character) || isDigit(character))
+		std::for_each(text.begin(), text.end(), [&newText](char character){			
+			if(character >= 'A' && character <= 'Z')
 			{
-				if(character >= 'A' && character <= 'Z')
-				{
-					newText.push_back((int)character + 32);
-				}
-				else
-				{
-					newText.push_back(character);
-				}
-			} 		
+				newText.push_back((int)character + 32);
+			}
+			else
+			{
+				newText.push_back(character);
+			}			 		
 		});
 		return newText;
 	}
