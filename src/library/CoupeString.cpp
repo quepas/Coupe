@@ -67,7 +67,7 @@ namespace Coupe
 			if(endIndex != std::string::npos)
 			{
 				return Utils::createCString(text.substr(beginIndex+beginTag.length(), 
-					endIndex-beginTag.length()-endTag.length()+1));
+					endIndex-beginIndex-beginTag.length()));
 			}
 			else
 			{

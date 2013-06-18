@@ -102,7 +102,13 @@ namespace Coupe
 			if(callExpression != nullptr)
 			{
 				std::vector<ExpressionAST*> args;
-				args.push_back(LHS);
+				args.push_back(LHS);				
+				std::vector<ExpressionAST*> rhsArgs = callExpression -> getArgs();
+
+				for(int i = 0; i < rhsArgs.size(); ++i)
+				{
+					args.push_back(rhsArgs[i]);
+				}				
 				return generateCall(callExpression -> getCallee(), args);							
 			}
 		}
