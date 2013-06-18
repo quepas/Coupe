@@ -29,19 +29,19 @@ namespace Coupe
 		return -1;
 	}
 
-	void Parser::setInputFile(std::string filename)
+	void Parser::setInputFile(std::string fileName)
 	{
-		std::ifstream* currentFile = new std::ifstream(filename);
-		if(!currentFile -> is_open())
+		std::ifstream* file = new std::ifstream(fileName);
+		if(!file -> is_open())
 		{
-			*outputStream << "Cannot open file: " << filename << "!" << std::endl;
+			*outputStream << "Cannot open file: " << fileName << "!" << std::endl;
 		}
-		setInputStream(*currentFile);
+		setInputStream(*file);
 	}
 
-	void Parser::setInputStream(std::istream& _stream)
+	void Parser::setInputStream(std::istream& stream)
 	{
-		inputStream = &_stream;
+		inputStream = &stream;
 		scanner = new Scanner();
 		scanner -> setInputStream(*inputStream);
 		beVerbose(verbose);

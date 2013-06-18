@@ -2,7 +2,7 @@
 #define COUPE_LIB_CAST_H_
 
 namespace Coupe
-{
+{	
 	char* toString(int number);
 	char* toString(double number);
 
@@ -10,7 +10,7 @@ namespace Coupe
 	int toInteger(char* number);
 
 	double toDouble(int number);
-	double toDouble(char* number);
+	double toDouble(char* number);	
 }
 
 #endif

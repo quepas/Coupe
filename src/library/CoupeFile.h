@@ -4,7 +4,7 @@
 namespace Coupe
 {
 	// Pattern: open file and read
-	void file(char* filename); 
+	char* file(char* filename); 
 	// Pattern: open file and write
 	void file(char* filename, char* content);
 	// Pattern: open file and append

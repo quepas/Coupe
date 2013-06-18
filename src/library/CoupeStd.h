@@ -1,20 +1,16 @@
 #ifndef COUPE_LIB_STD_H_
 #define COUPE_LIB_STD_H_
 
-#include <stdio.h>
-#include <malloc.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-
+#include "CoupeCast.h"
+#include "CoupeFile.h"
 #include "CoupeString.h"
+
+#include <map>
+#include <string>
 
 namespace Coupe
 {
-	extern "C"
-	char* toStringFromFile(char* filename);	
-	char* concatenate(char* a, char* b);	
+	std::map<std::string, void*>& getLibraryFunctionPtr();	
 }
 
 #endif
-

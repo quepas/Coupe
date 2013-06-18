@@ -2,6 +2,7 @@
 #define COUPE_CODE_GEN_H_
 
 #include "AST/CoupeASTDef.h"
+#include "library/CoupeLibraryMgr.h"
 
 #include <llvm/Value.h>
 #include <llvm/Module.h>
@@ -48,8 +49,11 @@ namespace Coupe
 			}
 		private:
 			CodeGen();
-			CodeGen(const CodeGen&) : builder(llvm::getGlobalContext()) {}
+			CodeGen(const CodeGen&) : builder(llvm::getGlobalContext()),
+				libraryMgr(LibraryMgr::getInstance()) {}
 			CodeGen& operator=(const CodeGen&) {}
+
+			LibraryMgr& libraryMgr;
 
 			llvm::ExecutionEngine *executionEngine;
 			llvm::FunctionPassManager *functionPassMgr;

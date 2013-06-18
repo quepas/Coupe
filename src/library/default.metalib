@@ -1,0 +1,23 @@
+# ***** metadata for extern function *****
+#		-- data types from Coupe --
+
+# Cast Library
+string toString(integer)
+string toString(double)
+integer toInteger(double)
+integer toInteger(string)
+double toDouble(integer)
+double toDouble(string)
+
+# File Library
+string file(string)
+
+# String Library
+string lower(string)
+string upper(string)
+string concat(string, string)
+string split1(string, string)
+string split2(string, string)
+string tags(string, string)
+string tags(string, string, string)
+

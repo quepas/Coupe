@@ -25,7 +25,6 @@ namespace Coupe
 		{
 			INTEGER,
 			DOUBLE,
-			CHAR,
 			STRING
 		};
 		
