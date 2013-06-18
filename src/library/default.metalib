@@ -2,12 +2,12 @@
 #		-- data types from Coupe --
 
 # Cast Library
-string toString(integer)
-string toString(double)
-integer toInteger(double)
-integer toInteger(string)
-double toDouble(integer)
-double toDouble(string)
+string toStringI(integer)
+string toStringD(double)
+integer toIntegerD(double)
+integer toIntegerS(string)
+double toDoubleI(integer)
+double toDoubleS(string)
 
 # File Library
 string file(string)
@@ -18,6 +18,12 @@ string upper(string)
 string concat(string, string)
 string split1(string, string)
 string split2(string, string)
-string tags(string, string)
+string tagsH(string, string)
 string tags(string, string, string)
 
+# Math Library
+double sqrt(double)
+
+# Std Library
+double empty()
+double identity(double)

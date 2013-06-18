@@ -95,6 +95,18 @@ namespace Coupe
 		llvm::Type* typeL = L -> getType();
 		llvm::Type* typeR = R -> getType();
 
+		// if "chain of implications"
+		if(op == TOK_OP_IMPLICATION)
+		{
+			CallAST* callExpression = dynamic_cast<CallAST*>(RHS);
+			if(callExpression != nullptr)
+			{
+				std::vector<ExpressionAST*> args;
+				args.push_back(LHS);
+				return generateCall(callExpression -> getCallee(), args);							
+			}
+		}
+
 		if(typeL -> getTypeID() != typeR -> getTypeID())
 		{
 			// upcast: integer -> double
@@ -138,16 +150,7 @@ namespace Coupe
 			switch(op)
 			{
 				case TOK_OP_IMPLICATION:
-					{					
-						CallAST* callExpression = dynamic_cast<CallAST*>(RHS);
-						if(callExpression != nullptr)
-						{
-							std::vector<ExpressionAST*> args;
-							args.push_back(LHS);
-							return generateCall(callExpression -> getCallee(), args);							
-						}
-					}
-					return errorV("binary operator is not supported yet");				
+					return errorV("binary operator is not supported yet");
 				case TOK_OP_MUL:
 					return builder.CreateFMul(L, R, "d_multmp");
 				case TOK_OP_DIV:
@@ -179,8 +182,14 @@ namespace Coupe
 		if(!calleeF)
 			return errorV("Unknown function referenced");			
 		if(calleeF -> arg_size() != args.size())
-			return errorV("Incorrect number of arguments passed");
-
+		{
+			// call empty function
+			llvm::Function *calleeF = mainModule -> getFunction("empty");
+			std::vector<llvm::Value*> argsValues;
+			return builder.CreateCall(calleeF, argsValues, "emptycall");
+			//return errorV("Incorrect number of arguments passed");
+		}
+			
 		std::vector<llvm::Value*> argsValues;
 		for(unsigned int i = 0; i < args.size(); ++i) 
 		{

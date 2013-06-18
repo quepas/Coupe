@@ -126,14 +126,16 @@ namespace Coupe
 		{			
 			MLData* data = mlDatas[i];			
 			std::vector<llvm::Type*> params;
+			std::string functionSufix;
 			for(unsigned int j = 0; j < data -> argsType.size(); ++j)
 			{
 				Value::Type type = data -> argsType[j];
 				params.push_back(convertValueType(type));
+				functionSufix.append(convertValueTypeToSufix(type));
 			}			
 			llvm::FunctionType* functionType = llvm::FunctionType::get(convertValueType(data -> returnType), params, false);
-			llvm::Function* functionPTR = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, data -> name, module);
-			executionEngine -> addGlobalMapping(functionPTR, function_map.at(data -> name));			
+			llvm::Function* functionPTR = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, data -> name, module);			
+			executionEngine -> addGlobalMapping(functionPTR, function_map.at(data -> name)); // +functionSufix			
 		}
 	}
 
@@ -193,12 +195,16 @@ namespace Coupe
 					case MLT_RIGHT_PARA:
 						return result;				
 					case MLT_COMMA:				
-						*outputStream << "expected \',\'" << std::endl;
-						return nullptr;
+						continue;						
 				}
+				*outputStream << "expected \',\'" << std::endl;
 			}
 			else 
 			{
+				if(token -> type == MLT_RIGHT_PARA)
+				{
+					return result;
+				}
 				*outputStream << "expected argument type" << std::endl;
 				return nullptr;
 			}
@@ -243,6 +249,20 @@ namespace Coupe
 			default:
 				return false;
 		}
+	}
+	
+	std::string LibraryMgr::convertValueTypeToSufix(Value::Type type)
+	{
+		switch(type)
+		{
+			case Value::INTEGER:
+				return "I";
+			case Value::DOUBLE:
+				return "D";
+			case Value::STRING:
+				return "S";
+		}
+		return "";
 	}
 
 	char LibraryMgr::getCharacter()

@@ -3,14 +3,18 @@
 
 #include "CoupeCast.h"
 #include "CoupeFile.h"
-#include "CoupeString.h"
+#include "CoupeString.h" 
+#include "CoupeMath.h"
 
 #include <map>
 #include <string>
 
 namespace Coupe
 {
-	std::map<std::string, void*>& getLibraryFunctionPtr();	
+	std::map<std::string, void*>& getLibraryFunctionPtr();
+
+	double empty();
+	double identity(double number);
 }
 
 #endif

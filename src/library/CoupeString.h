@@ -11,7 +11,7 @@ namespace Coupe
 	// Pattern: split and return second half
 	char* split2(char* text, char* delimeter);
 	// Pattern: get content from html tags (without '<', '>')
-	char* tags(char* text, char* tag);
+	char* tagsH(char* text, char* tag);
 	// Pattern: get content between tags
 	char* tags(char* text, char* beginTag, char* endTag);
 }

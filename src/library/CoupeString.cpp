@@ -46,7 +46,7 @@ namespace Coupe
 	}
 
 	// Pattern: get content from html tags (without '<', '>')
-	char* tags(char* text, char* _tag)
+	char* tagsH(char* text, char* _tag)
 	{
 		std::string tag(_tag), 
 					beginTag = "<" + tag + ">",

@@ -22,6 +22,7 @@ namespace Coupe
 			MLT_INTEGER,
 			MLT_DOUBLE,
 			MLT_STRING,
+			MLT_VOID,
 			MLT_LEFT_PARA,
 			MLT_RIGHT_PARA,
 			MLT_COMMA,
@@ -78,6 +79,7 @@ namespace Coupe
 			Value::Type convertTokenType(MLToken* token);
 			llvm::Type* convertValueType(Value::Type type);
 			bool isDataType(MLToken* token);
+			std::string convertValueTypeToSufix(Value::Type type);
 	};
 }
 

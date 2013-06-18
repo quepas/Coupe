@@ -4,31 +4,31 @@
 
 namespace Coupe
 {
-	char* toString(int number)
+	char* toStringI(int number)
 	{
 		return Utils::createCString(lexical_cast<std::string>(number));
 	}
-	char* toString(double number)
+	char* toStringD(double number)
 	{
 		return Utils::createCString(lexical_cast<std::string>(number));
 	}
 
-	int toInteger(double number)
+	int toIntegerD(double number)
 	{
 		return static_cast<int>(number);
 	}
 
-	int toInteger(char* number)
+	int toIntegerS(char* number)
 	{
 		return lexical_cast<int>(number);
 	}
 
-	double toDouble(int number)
+	double toDoubleI(int number)
 	{
 		return static_cast<double>(number);
 	}
 
-	double toDouble(char* number)
+	double toDoubleS(char* number)
 	{
 		return lexical_cast<double>(number);
 	}

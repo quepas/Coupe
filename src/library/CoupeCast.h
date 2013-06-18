@@ -3,14 +3,14 @@
 
 namespace Coupe
 {	
-	char* toString(int number);
-	char* toString(double number);
+	char* toStringI(int number);
+	char* toStringD(double number);
 
-	int toInteger(double number);
-	int toInteger(char* number);
+	int toIntegerD(double number);
+	int toIntegerS(char* number);
 
-	double toDouble(int number);
-	double toDouble(char* number);	
+	double toDoubleI(int number);
+	double toDoubleS(char* number);	
 }
 
 #endif

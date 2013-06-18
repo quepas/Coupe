@@ -1,28 +1,50 @@
 #include "CoupeStd.h"
 
-std::map<std::string, void*>& Coupe::getLibraryFunctionPtr()
+
+namespace Coupe 
 {
-	static std::map<std::string, void*> functionsPtr = std::map<std::string, void*>();		
+	std::map<std::string, void*>& getLibraryFunctionPtr()
+	{
+		static std::map<std::string, void*> functionsPtr = std::map<std::string, void*>();		
 
-	// Library Cast
-	functionsPtr["toString"] = (char* (*)(int)) &toString;
-	functionsPtr["toString"] = (char* (*)(double)) &toString;
-	functionsPtr["toInteger"] = (int (*)(double)) &toInteger;
-	functionsPtr["toInteger"] = (int (*)(char*)) &toInteger;
-	functionsPtr["toDouble"] = (double (*)(int)) &toDouble;
-	functionsPtr["toDouble"] = (double (*)(char*)) &toDouble;
+		// Cast Library
+		functionsPtr["toStringI"] = (char* (*)(int)) &toStringI;
+		functionsPtr["toStringD"] = (char* (*)(double)) &toStringD;
+		functionsPtr["toIntegerD"] = (int (*)(double)) &toIntegerD;
+		functionsPtr["toIntegerS"] = (int (*)(char*)) &toIntegerS;
+		functionsPtr["toDoubleI"] = (double (*)(int)) &toDoubleI;
+		functionsPtr["toDoubleS"] = (double (*)(char*)) &toDoubleS;
 
-	// Library File
-	functionsPtr["file"] = (char* (*)(char*)) &file;
+		// File Library
+		functionsPtr["file"] = (char* (*)(char*)) &file;
 
-	// Library String
-	functionsPtr["lower"] = (char* (*)(char*)) &lower;
-	functionsPtr["upper"] = (char* (*)(char*)) &upper;
-	functionsPtr["concat"] = (char* (*)(char*, char*)) &concat;
-	functionsPtr["split1"] = (char* (*)(char*, char*)) &split1;
-	functionsPtr["split2"] = (char* (*)(char*, char*)) &split2;
-	functionsPtr["tags"] = (char* (*)(char*, char*)) &tags;
-	functionsPtr["tags"] = (char* (*)(char*, char*, char*)) &tags;
+		// String Library
+		functionsPtr["lower"] = (char* (*)(char*)) &lower;
+		functionsPtr["upper"] = (char* (*)(char*)) &upper;
+		functionsPtr["concat"] = (char* (*)(char*, char*)) &concat;
+		functionsPtr["split1"] = (char* (*)(char*, char*)) &split1;
+		functionsPtr["split2"] = (char* (*)(char*, char*)) &split2;
+		functionsPtr["tagsH"] = (char* (*)(char*, char*)) &tagsH;
+		functionsPtr["tags"] = (char* (*)(char*, char*, char*)) &tags;
 
-	return functionsPtr;
+		// Math Library
+		functionsPtr["sqrt"] = (double (*)(double)) &sqrt;
+
+		// Std Library
+		functionsPtr["empty"] = (double (*)()) &empty;
+		functionsPtr["identity"] = (double (*)(double)) &identity;
+
+		return functionsPtr;
+	}
+
+	double empty()
+	{
+		return 0.0;
+	}
+
+	double identity(double number)
+	{
+		return number;
+	}
 }
+
