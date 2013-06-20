@@ -11,6 +11,8 @@ double toDoubleS(string)
 
 # File Library
 string file(string)
+string fileW(string, string)
+string fileAppend(string, string)
 
 # String Library
 string lower(string)

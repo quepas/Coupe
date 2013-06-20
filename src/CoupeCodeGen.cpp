@@ -44,7 +44,7 @@ namespace Coupe
 	void CodeGen::initStandardLibrary()
 	{		
 		libraryMgr.beVerbose(verbose);
-		libraryMgr.setInputFile("src/library/default.metalib");
+		libraryMgr.setMetalibFile("src/library/default.metalib");
 		libraryMgr.parseAndExecute(executionEngine, mainModule);
 	}
 

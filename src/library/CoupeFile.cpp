@@ -18,19 +18,21 @@ namespace Coupe
 	}
 
 	// Pattern: open file and write
-	void file(char* filename, char* _content)
+	char* fileW(char* filename, char* _content)
 	{
 		std::ofstream file = std::ofstream(filename, std::ios_base::trunc);
 		std::string content(_content);
 		file << content;
 		file.close();
+		return Utils::createCString("Success");
 	}
 	// Pattern: open file and append
-	void fileAppend(char* filename, char* _content)
+	char* fileAppend(char* filename, char* _content)
 	{
 		std::ofstream file = std::ofstream(filename, std::ios_base::ate);
 		std::string content(_content);
 		file << content;
 		file.close();
+		return Utils::createCString("Success");
 	}
 }

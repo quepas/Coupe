@@ -17,6 +17,8 @@ namespace Coupe
 
 		// File Library
 		functionsPtr["file"] = (char* (*)(char*)) &file;
+		functionsPtr["fileW"] = (char* (*)(char*, char*)) &fileW;
+		functionsPtr["fileAppend"] = (char* (*)(char*, char*)) &fileAppend;
 
 		// String Library
 		functionsPtr["lower"] = (char* (*)(char*)) &lower;

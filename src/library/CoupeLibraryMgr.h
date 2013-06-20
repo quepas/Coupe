@@ -45,7 +45,7 @@ namespace Coupe
 		};
 
 		public:
-			void setInputFile(std::string filename);
+			void setMetalibFile(std::string filename);
 			void setInputStream(std::istream& stream);
 			void setOutputStream(std::ostream& stream);
 			void beVerbose(bool _verbose);

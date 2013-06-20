@@ -8,7 +8,7 @@
 
 namespace Coupe
 {
-	void LibraryMgr::setInputFile(std::string filename)
+	void LibraryMgr::setMetalibFile(std::string filename)
 	{
 		std::ifstream* file = new std::ifstream(filename);
 		if(!file -> is_open())

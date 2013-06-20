@@ -11,7 +11,8 @@ int main()
 	std::string fileNameFib = "test_files/coupe_fib.txt";
 
 	Coupe::Parser parser;
-	parser.beVerbose(true);	
+	parser.beVerbose(false);	
+	parser.beVerboseAboutEvaluation(true);
 	//parser.setInputFile(fileName);	    
 	parser.parse();	
 

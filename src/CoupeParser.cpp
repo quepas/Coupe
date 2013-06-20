@@ -42,6 +42,13 @@ namespace Coupe
 	void Parser::setInputStream(std::istream& stream)
 	{
 		inputStream = &stream;
+
+		if(&stream == &std::cin) {
+			useShell = true;
+		} else {
+			useShell = false;
+		}
+
 		scanner = new Scanner();
 		scanner -> setInputStream(*inputStream);
 		beVerbose(verbose);
@@ -52,6 +59,11 @@ namespace Coupe
 		verbose = _verbose;
 		scanner -> beVerbose(_verbose);
 		CodeGen::getInstance().beVerbose(_verbose);
+	}
+
+	void Parser::beVerboseAboutEvaluation(bool _verboseEval)
+	{
+		verboseEval = _verboseEval;
 	}
 
 	void Parser::beVerboseAboutScanner(bool verbose)
@@ -73,6 +85,7 @@ namespace Coupe
 	{
 		if(scanner)
 		{					
+			std::cout << "coupe> ";
 			getNextToken();
 			do 
 			{												
@@ -94,6 +107,7 @@ namespace Coupe
 						handleMainCode();															
 						break;
 				}
+				std::cout << "coupe> ";
 			} while (token -> type != TOK_EOF);			
 		}
 	}	
@@ -129,7 +143,7 @@ namespace Coupe
 			if(LF)
 			{
 				beVerboseAboutPrototype(prototype, true);
-				LF -> dump();
+				beVerboseAboutDump(LF);
 			}			
 		}		
 	}
@@ -181,7 +195,7 @@ namespace Coupe
 			if(LF)
 			{
 				beVerboseAboutFunction(function);
-				LF -> dump();
+				beVerboseAboutDump(LF);
 			}
 		}
 	}
@@ -362,7 +376,7 @@ namespace Coupe
 			{				
 				beVerboseAboutEvaluation(LF);
 				beVerboseAboutExpression(anonymousFunction -> getBody());
-				LF -> dump();
+				beVerboseAboutDump(LF);
 			}			
 		}
 	}
@@ -483,7 +497,7 @@ namespace Coupe
 
 	void Parser::beVerboseAboutEvaluation(llvm::Function* function)
 	{
-		if(verbose)
+		if(verboseEval)
 		{
 			void *FPtr = codeGen.getExecutionEngine() -> getPointerToFunction(function);
 			llvm::Type* functionType = function -> getReturnType();
@@ -497,6 +511,14 @@ namespace Coupe
 			else if (functionType -> isPointerTy()){
 				*outputStream << "Evaluated: " <<  ((char*(*)())(intptr_t)FPtr)() << std::endl;												
 			}
+		}
+	}
+
+	void Parser::beVerboseAboutDump(llvm::Function* function)
+	{
+		if(verbose)
+		{
+			function -> dump();
 		}
 	}
 

@@ -19,6 +19,8 @@ namespace Coupe
 					   codeGen(CodeGen::getInstance()),
 					   token(nullptr),
 					   verbose(false),
+					   verboseEval(false),
+					   useShell(true),
 					   inputStream(&std::cin),
 					   outputStream(&std::cout)
 			{ initBinaryOpPrec(); }
@@ -27,8 +29,9 @@ namespace Coupe
 			void setInputStream(std::istream& stream);
 			void setOutputStream(std::ostream& stream);
 			void beVerbose(bool verbose);
+			void beVerboseAboutEvaluation(bool verboseEval);
 			void beVerboseAboutScanner(bool verbose);
-			void beVerboseAboutCodeGen(bool verbose);
+			void beVerboseAboutCodeGen(bool verbose);			
 			void parse();									
 			
 		private:
@@ -37,6 +40,8 @@ namespace Coupe
 
 			Token* token;
 			bool verbose;
+			bool verboseEval;
+			bool useShell;
 			std::istream* inputStream;
 			std::ostream* outputStream;		
 			static std::map<Type, int> binaryOperatorsPrecedence;
@@ -81,7 +86,8 @@ namespace Coupe
 			void beVerboseAboutPrototype(PrototypeAST* prototype, bool isExternal = false);
 			void beVerboseAboutFunction(FunctionAST* function);
 			void beVerboseAboutImport(ImportAST* import);
-			void beVerboseAboutEvaluation(llvm::Function* function);			
+			void beVerboseAboutEvaluation(llvm::Function* function);		
+			void beVerboseAboutDump(llvm::Function* function);
 	};
 }
 
