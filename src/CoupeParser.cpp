@@ -54,6 +54,11 @@ namespace Coupe
 		beVerbose(verbose);
 	}
 
+	void Parser::setOutputStream(std::ostream& stream)
+	{
+		outputStream = &stream;
+	}
+
 	void Parser::beVerbose(bool _verbose)
 	{
 		verbose = _verbose;
@@ -76,6 +81,11 @@ namespace Coupe
 		codeGen.beVerbose(verbose);
 	}
 
+	void Parser::useAsShell(bool _useAsShell)
+	{
+		scanner->setUseAsShell(_useAsShell);
+	}
+
 	Token* Parser::getNextToken()
 	{
 		return token = scanner -> getNext();
@@ -85,7 +95,8 @@ namespace Coupe
 	{
 		if(scanner)
 		{					
-			std::cout << "coupe> ";
+			if(useShell)
+				std::cout << "coupe> ";			
 			getNextToken();
 			do 
 			{												
@@ -103,14 +114,61 @@ namespace Coupe
 					case TOK_SEMICOLON:
 						getNextToken();
 						break;
+					case SHELL_COMMAND:		
+						parseAndExecuteShellCommand();		
+						inputStream -> clear();
+						if(useShell)
+							std::cout << "coupe> ";	
+						getNextToken();
+						break;
 					default:
 						handleMainCode();															
 						break;
 				}
-				std::cout << "coupe> ";
+				if(useShell && token -> type != SHELL_COMMAND)
+					std::cout << "coupe> ";	
 			} while (token -> type != TOK_EOF);			
 		}
 	}	
+
+	bool Parser::parseAndExecuteShellCommand()
+	{
+		char command = token -> value.data.at(0);		
+		switch(command)
+		{
+			case 'f':
+				{
+					std::string filename = token -> value.data.substr(2);
+					executeCoupeFromFile(filename);					
+				}				
+				return true;
+			case 'c':
+				// display command info
+				*outputStream << "Available shell commands: " << std::endl;
+				*outputStream << "\t\\f \"filename\" - execute Coupe from file" << std::endl;
+				*outputStream << "\t\\c - show Coupe shell commands (watcha for deathly recursion :))" << std::endl;
+				*outputStream << "\t\\v - show Coupe shell version" << std::endl;
+				return false;
+			case 'v':
+				// display info
+				*outputStream << "Coupe shell 1.0" << std::endl;
+				*outputStream << "\tEnjoy life while you can!" << std::endl;
+				return false;
+			default:
+				return false;
+		}		
+	}
+
+	void Parser::executeCoupeFromFile(std::string filename)
+	{
+		Parser tempParser;
+		tempParser.setOutputStream(*outputStream);
+		tempParser.setInputFile(filename);		
+		tempParser.beVerbose(false);
+		tempParser.useAsShell(false);
+		tempParser.beVerboseAboutEvaluation(true);
+		tempParser.parse();
+	}
 
 	void Parser::handleImport()
 	{		

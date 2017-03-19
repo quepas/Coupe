@@ -31,8 +31,10 @@ namespace Coupe
 			void beVerbose(bool verbose);
 			void beVerboseAboutEvaluation(bool verboseEval);
 			void beVerboseAboutScanner(bool verbose);
-			void beVerboseAboutCodeGen(bool verbose);			
-			void parse();									
+			void beVerboseAboutCodeGen(bool verbose);	
+			void useAsShell(bool _useAsShell);
+			void parse();	
+			bool parseAndExecuteShellCommand();
 			
 		private:
 			Scanner* scanner;	
@@ -88,6 +90,8 @@ namespace Coupe
 			void beVerboseAboutImport(ImportAST* import);
 			void beVerboseAboutEvaluation(llvm::Function* function);		
 			void beVerboseAboutDump(llvm::Function* function);
+
+			void executeCoupeFromFile(std::string filename);
 	};
 }
 

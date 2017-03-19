@@ -13,6 +13,7 @@ namespace Coupe
 		public:			
 			Scanner() : position(1, 0), 
 						verbose(false),	
+						useAsShell(false),
 						inputStream(&std::cin),
 						outputStream(&std::cout) {}	
 
@@ -21,10 +22,12 @@ namespace Coupe
 			void setInputStream(std::istream& stream);
 			void setOutputStream(std::istream& stream);
 			void beVerbose(bool _verbose);
+			void setUseAsShell(bool _useAsShell);
 
 		private:
 			Position position;						
 			bool verbose;
+			bool useAsShell;
 			std::istream* inputStream;
 			std::ostream* outputStream;
 

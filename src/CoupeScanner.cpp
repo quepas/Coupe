@@ -25,6 +25,11 @@ namespace Coupe
 		verbose = _verbose;
 	}
 
+	void Scanner::setUseAsShell(bool _useAsShell)
+	{
+		useAsShell = _useAsShell;
+	}
+
 	Token* Scanner::getNext()
 	{
 		Token* token = getNextToken();
@@ -50,6 +55,32 @@ namespace Coupe
 		} while (Utils::isWhitespace(currentChar));
 		tokenPosition.set(position.row, position.col);
 
+		// SHELL_COMMAND
+		if(useAsShell)
+		{
+			if(currentChar == '\\')
+			{
+				currentChar = getCharacter();
+				currentValue.push_back(currentChar);
+
+				switch(currentChar)
+				{
+				case 'f':					
+					do 
+					{
+						currentChar = getCharacter();
+						if(currentChar == '\n') break;
+						currentValue.push_back(currentChar);
+					} while (true);
+					return createToken(SHELL_COMMAND, currentValue, tokenPosition);
+				case 'v':
+					return createToken(SHELL_COMMAND, currentValue, tokenPosition);
+				case 'c':
+					return createToken(SHELL_COMMAND, currentValue, tokenPosition);
+				}
+			}
+		}
+		
 		// identifier or keyword
 		if(Utils::isCharacter(currentChar)) 
 		{

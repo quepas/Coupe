@@ -74,7 +74,9 @@ namespace Coupe
 		TOK_COMMA,
 		TOK_SEMICOLON,
 		TOK_COLON,
-		TOK_KW_PATTERN
+		TOK_KW_PATTERN,
+
+		SHELL_COMMAND
 	};	
 
 	struct Token

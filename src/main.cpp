@@ -13,6 +13,7 @@ int main()
 	Coupe::Parser parser;
 	parser.beVerbose(false);	
 	parser.beVerboseAboutEvaluation(true);
+	parser.useAsShell(true);
 	//parser.setInputFile(fileName);	    
 	parser.parse();	
 
